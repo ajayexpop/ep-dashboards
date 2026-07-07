@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Delivery Roadmap</title>
+<style>
+  :root{
+    --navy:#0f1b3d; --teal:#0891b2; --green:#16a34a; --orange:#d97706;
+    --blue:#2563eb; --purple:#7c3aed; --red:#dc2626; --amber:#d97706;
+    --pink:#db2777; --indigo:#4f46e5;
+    --bg:#f4f6fb; --panel:#ffffff; --ink:#131a2b; --ink2:#495468; --muted:#8a94a7;
+    --line:#e6e9f0; --line2:#eef1f6; --today:#ef4444;
+    --shadow:0 1px 2px rgba(15,27,61,.05),0 12px 34px -14px rgba(15,27,61,.18);
+    --shadow-sm:0 1px 2px rgba(15,27,61,.06),0 5px 16px -10px rgba(15,27,61,.22);
+    --namecol:300px; --r:12px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; font-variant-numeric:tabular-nums; line-height:1.45;
+  }
+  h1,h2,h3,h4,p{margin:0}
+  .wrap{max-width:1440px;margin:0 auto;padding:0 22px 60px}
+  .canvas{min-width:1100px}
+  .scroller{overflow-x:auto}
+
+  /* ---------- Header band ---------- */
+  .hdr{
+    background:var(--navy); color:#fff; border-radius:0 0 var(--r) var(--r);
+    padding:26px 30px 0; position:relative; box-shadow:var(--shadow);
+  }
+  .hdr-inner{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:22px}
+  .hdr h1{font-size:1.9rem;font-weight:750;letter-spacing:-.4px;line-height:1.05}
+  .hdr .sub{color:#aeb8d6;font-size:.92rem;margin-top:7px;font-weight:450}
+  .hdr .meta{text-align:right;color:#aeb8d6;font-size:.82rem;line-height:1.7;white-space:nowrap}
+  .hdr .meta .team{color:#e7ecf8;font-weight:600}
+  .accent-underline{height:4px;background:var(--teal);border-radius:0 0 var(--r) var(--r)}
+
+  /* ---------- Summary chips ---------- */
+  .chips{display:flex;gap:16px;flex-wrap:wrap;margin:22px 0 6px}
+  .chip{
+    flex:1 1 0;min-width:190px;background:var(--panel);border:1px solid var(--line);
+    border-radius:var(--r);padding:16px 20px;box-shadow:var(--shadow-sm);
+    display:flex;align-items:center;gap:16px;position:relative;overflow:hidden;
+  }
+  .chip::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--c)}
+  .chip .num{font-size:2.05rem;font-weight:760;line-height:1;color:var(--c);letter-spacing:-1px}
+  .chip .lbl{font-size:.82rem;color:var(--ink2);font-weight:550;line-height:1.3}
+
+  /* ---------- Filter bar ---------- */
+  .filterbar{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:20px 0 14px;
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+    padding:12px 16px;box-shadow:var(--shadow-sm);
+  }
+  .search{
+    flex:0 0 250px;border:1px solid var(--line);border-radius:8px;padding:8px 12px;
+    font-size:.86rem;color:var(--ink);outline:none;background:#fbfcfe;
+  }
+  .search:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(8,145,178,.12)}
+  .pill{
+    border:1px solid var(--line);background:#fbfcfe;color:var(--ink2);
+    border-radius:999px;padding:6px 13px;font-size:.8rem;font-weight:550;cursor:pointer;
+    transition:all .12s ease;user-select:none;white-space:nowrap;
+  }
+  .pill:hover{border-color:#c7cede;color:var(--ink)}
+  .pill.active{background:var(--navy);border-color:var(--navy);color:#fff}
+  .itemcount{margin-left:auto;font-size:.82rem;color:var(--muted);font-weight:550;white-space:nowrap}
+
+  /* ---------- Timeline grid ---------- */
+  .board{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+  .tl-head{position:relative;border-bottom:1px solid var(--line)}
+  .qrow,.mrow{display:flex}
+  .qrow .spacer,.mrow .spacer{flex:0 0 var(--namecol);border-right:1px solid var(--line)}
+  .qcells,.mcells{flex:1 1 auto;display:flex;position:relative}
+  .qcell{
+    text-align:center;font-weight:700;font-size:.86rem;color:var(--ink);
+    padding:11px 0 9px;border-right:1px solid var(--line);letter-spacing:.2px;
+    background:linear-gradient(#fafbfe,#f4f6fb);
+  }
+  .qcell:last-child{border-right:none}
+  .mcell{
+    flex:1 1 0;text-align:center;font-size:.76rem;color:var(--muted);font-weight:600;
+    padding:7px 0;border-right:1px solid var(--line2);text-transform:uppercase;letter-spacing:.6px;
+  }
+  .mcell:last-child{border-right:none}
+
+  /* today line overlay spanning the timeline (name col excluded) */
+  .today-line{
+    position:absolute;top:0;bottom:0;width:0;border-left:2px dashed var(--today);
+    opacity:.5;z-index:6;pointer-events:none;
+  }
+  .today-line::after{
+    content:"TODAY";position:absolute;top:2px;left:5px;font-size:.58rem;font-weight:700;
+    color:var(--today);letter-spacing:.5px;opacity:.85;
+  }
+
+  /* ---------- Theme groups ---------- */
+  .theme-head{
+    display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none;
+    padding:12px 18px 12px 0;border-top:1px solid var(--line);
+    background:linear-gradient(#fcfdff,#f7f9fd);position:relative;
+  }
+  .theme-head:first-child{border-top:none}
+  .theme-head .bar{width:6px;align-self:stretch;background:var(--acc);border-radius:0 3px 3px 0}
+  .theme-head .caret{color:var(--muted);font-size:.7rem;transition:transform .15s ease;width:12px;text-align:center}
+  .theme-head.collapsed .caret{transform:rotate(-90deg)}
+  .theme-head .tname{font-size:.82rem;font-weight:750;letter-spacing:1.1px;text-transform:uppercase;color:var(--ink)}
+  .theme-head .badge{
+    font-size:.72rem;font-weight:650;color:#fff;background:var(--acc);
+    border-radius:999px;padding:2px 9px;line-height:1.4;
+  }
+  .theme-rows{display:block}
+  .theme-head.collapsed + .theme-rows{display:none}
+
+  /* ---------- Feature rows ---------- */
+  .item-row{display:flex;align-items:stretch;border-top:1px solid var(--line2);min-height:46px;cursor:pointer;transition:background .1s ease}
+  .item-row:hover{background:#f8fafd}
+  .item-row.open{background:#f2f9fb}
+  .item-name{
+    flex:0 0 var(--namecol);display:flex;align-items:center;gap:9px;
+    padding:8px 14px 8px 34px;border-right:1px solid var(--line);min-width:0;
+  }
+  .item-name .fname{font-size:.85rem;font-weight:560;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .status-badge{
+    flex:0 0 auto;font-size:.66rem;font-weight:700;border-radius:5px;padding:2px 7px;
+    letter-spacing:.2px;white-space:nowrap;border:1px solid transparent;
+  }
+  .sb-shipped{color:var(--green);background:rgba(22,163,74,.1);border-color:rgba(22,163,74,.2)}
+  .sb-progress{color:var(--orange);background:rgba(217,119,6,.1);border-color:rgba(217,119,6,.2)}
+  .sb-blocked{color:var(--red);background:rgba(220,38,38,.1);border-color:rgba(220,38,38,.2)}
+  .sb-upcoming{color:var(--blue);background:rgba(37,99,235,.1);border-color:rgba(37,99,235,.2)}
+  .sb-phased{color:var(--purple);background:rgba(124,58,237,.1);border-color:rgba(124,58,237,.2)}
+
+  .item-track{flex:1 1 auto;position:relative;display:flex}
+  .track-grid{position:absolute;inset:0;display:flex;pointer-events:none}
+  .track-grid .g{flex:1 1 0;border-right:1px solid var(--line2)}
+  .track-grid .g:last-child{border-right:none}
+  .bar{
+    position:absolute;top:50%;transform:translateY(-50%);height:20px;border-radius:6px;
+    display:flex;align-items:center;justify-content:flex-end;padding:0 6px;z-index:2;
+    box-shadow:0 1px 2px rgba(15,27,61,.12);min-width:8px;
+  }
+  .bar .tick{color:#fff;font-size:.7rem;font-weight:800;line-height:1}
+  .bar-shipped{background:var(--green)}
+  .bar-progress{background:var(--orange)}
+  .bar-blocked{background:var(--red)}
+  .bar-upcoming{background:var(--blue)}
+  .bar-phased{
+    background:repeating-linear-gradient(45deg,rgba(124,58,237,.55),rgba(124,58,237,.55) 7px,rgba(124,58,237,.34) 7px,rgba(124,58,237,.34) 14px);
+    border:1px dashed rgba(124,58,237,.7);
+  }
+
+  /* ---------- Expand panel ---------- */
+  .detail{border-top:1px solid var(--line2);background:#fff;display:none}
+  .detail.show{display:block}
+  .detail-inner{
+    border-left:4px solid var(--teal);margin:12px 18px 16px 34px;background:#fff;
+    border-radius:0 10px 10px 0;box-shadow:var(--shadow-sm);padding:16px 20px;position:relative;
+  }
+  .detail .close{
+    position:absolute;top:10px;right:12px;cursor:pointer;color:var(--muted);
+    font-size:1.05rem;line-height:1;border:none;background:none;padding:4px;
+  }
+  .detail .close:hover{color:var(--ink)}
+  .wwo{display:flex;gap:26px;flex-wrap:wrap}
+  .wwo .col{flex:1 1 240px;min-width:0}
+  .wwo .k{font-size:.66rem;font-weight:750;letter-spacing:1px;text-transform:uppercase;color:var(--teal);margin-bottom:5px}
+  .wwo .v{font-size:.86rem;color:var(--ink2);line-height:1.5}
+
+  /* ---------- Footer ---------- */
+  .footer{
+    margin-top:20px;font-size:.76rem;color:var(--muted);line-height:1.65;
+    border-top:1px solid var(--line);padding-top:16px;white-space:pre-line;
+  }
+  .empty{padding:40px;text-align:center;color:var(--muted);font-size:.9rem;display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="scroller">
+    <div class="canvas">
+      <!-- Header band -->
+      <header class="hdr">
+        <div class="hdr-inner">
+          <div>
+            <h1 id="epTitle"></h1>
+            <div class="sub" id="epSub"></div>
+          </div>
+          <div class="meta">
+            <div id="epUpdated"></div>
+            <div class="team" id="epTeam"></div>
+          </div>
+        </div>
+        <div class="accent-underline"></div>
+      </header>
+
+      <!-- Summary chips -->
+      <div class="chips" id="chips"></div>
+
+      <!-- Filter bar -->
+      <div class="filterbar">
+        <input type="text" class="search" id="search" placeholder="Search features..." aria-label="Search features">
+        <div id="pills" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        <span class="itemcount" id="itemcount"></span>
+      </div>
+
+      <!-- Board -->
+      <div class="board">
+        <div class="tl-head">
+          <div class="qrow">
+            <div class="spacer"></div>
+            <div class="qcells" id="qcells"></div>
+          </div>
+          <div class="mrow">
+            <div class="spacer"></div>
+            <div class="mcells" id="mcells"></div>
+          </div>
+          <div class="today-line" id="todayLineHead"></div>
+        </div>
+        <div id="groups"></div>
+        <div class="empty" id="empty">No features match your filters.</div>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer" id="footer"></div>
+    </div>
+  </div>
+</div>
+
+<script id="roadmap-data" type="application/json">{"title":"Product Delivery Roadmap","subtitle":"H1 2026 \u00b7 Relationship Managers view \u00b7 32 features across 6 themes","team":"ExpoPlatform Product Team","lastUpdated":"2026-07-07","todayPct":46,"months":["Jan","Feb","Mar","Apr","May","Jun"],"quarters":[{"label":"Q1 2026","span":3},{"label":"Q2 2026 *","span":3}],"footer":"* April and Q2 timelines are indicative and subject to change based on capacity, dependencies, and ongoing discovery. Dates represent current best estimates, not delivery commitments.\nSession Calendar, Organizer Onboarding, Registration Service are phased initiatives. Lead Qualification Dashboard scope is under active discovery.\nClick any row to expand What / Why / Outcome \u00b7 Click theme headers to collapse/expand sections.","themes":[{"name":"Website & Page Builder","accent":"#0891b2","features":[{"name":"Custom Grids: Core Engine","status":"Shipped","startPct":8.3,"endPct":25,"what":"A configurable grid system in the page builder letting organisers lay out cards with flexible fields, filters, and styling options.","why":"Organisers need more control over how lists look and behave beyond fixed templates, to match brand and create tailored landing pages.","outcome":"Faster page production, higher engagement on key listings, and fewer one-off custom requests to dev."},{"name":"Buttons Block Component","status":"Shipped","startPct":0,"endPct":13.3,"what":"A reusable button block that organisers can drop into any page to drive registration, downloads, or external links.","why":"Teams were hard-coding call-to-action links, which was slow and inconsistent across event pages.","outcome":"Consistent, on-brand calls to action that lift click-through on primary conversion actions."},{"name":"Grid Structure & Settings","status":"Shipped","startPct":16.7,"endPct":30,"what":"Structural controls for the grid, letting organisers set columns, spacing, and card behaviour per breakpoint.","why":"The first grid release lacked layout controls, so pages did not adapt cleanly across screen sizes.","outcome":"Polished, responsive listing pages without developer involvement."},{"name":"Grid Column Display Fix","status":"Shipped","startPct":18.3,"endPct":30,"what":"A fix ensuring grid columns render at the correct width and wrap predictably on all devices.","why":"Some grids displayed misaligned or overlapping columns on mobile, hurting the visitor experience.","outcome":"Reliable grid rendering that protects the quality of client-facing event sites."},{"name":"Card Styling Options","status":"In Progress","startPct":41.7,"endPct":50,"what":"Expanded styling controls for cards, including colours, borders, image ratios, and hover states.","why":"Organisers want cards that reflect their brand rather than a single default look.","outcome":"More distinctive, brand-aligned listings that raise the perceived quality of event pages."},{"name":"Image & Video Sizing Controls","status":"April *","startPct":50,"endPct":58.3,"what":"Controls to set and constrain image and video dimensions within page blocks.","why":"Uncontrolled media sizes broke layouts and slowed page loads on rich event pages.","outcome":"Cleaner layouts and faster pages, improving both design quality and load performance."}]},{"name":"Mobile & Attendee Experience","accent":"#16a34a","features":[{"name":"Session Deeplinks","status":"Shipped","startPct":0,"endPct":8.3,"what":"Deep links that open a specific session directly inside the event mobile app.","why":"Attendees shared session links that dropped people on a generic screen instead of the session itself.","outcome":"Smoother navigation to sessions, driving higher agenda engagement in the app."},{"name":"Search Results by Name Priority","status":"Shipped","startPct":8.3,"endPct":16.7,"what":"Search ranking that prioritises exact name matches when attendees look up people, sessions, or exhibitors.","why":"Relevant results were buried below weaker matches, making search feel unreliable.","outcome":"Faster, more trustworthy search that helps attendees find who and what they need."},{"name":"Participants Profile Completeness","status":"Shipped","startPct":25,"endPct":41.7,"what":"A profile completeness indicator that prompts attendees to add missing details.","why":"Sparse profiles weaken networking and matchmaking quality across the event.","outcome":"Richer profiles that improve match relevance and networking outcomes."},{"name":"Favorites Filter & Sort in App","status":"In Progress","startPct":37.5,"endPct":48.3,"what":"Filtering and sorting for items an attendee has favourited in the app.","why":"Long favourites lists were hard to navigate, so attendees lost track of what they saved.","outcome":"Easier planning of an attendee's personal agenda, increasing return visits to the app."},{"name":"Now & Upcoming Sessions","status":"In Progress","startPct":40,"endPct":49.2,"what":"A live view surfacing sessions happening now and starting soon.","why":"Attendees struggled to see what was on right now without scrolling the full agenda.","outcome":"Higher session attendance by nudging attendees toward what is live and next."},{"name":"Event Feedback via App","status":"June *","startPct":83.3,"endPct":92,"what":"In-app feedback and rating prompts for sessions and the overall event.","why":"Organisers rely on slow post-event surveys with low response rates.","outcome":"Faster, higher-volume feedback that helps organisers prove and improve event value."}]},{"name":"Networking & Meetings","accent":"#7c3aed","features":[{"name":"Precise Matchmaking Algorithm","status":"Shipped","startPct":25,"endPct":41.7,"what":"An upgraded matchmaking algorithm that recommends more relevant people to meet.","why":"Generic recommendations produced low-quality meeting suggestions and weak networking value.","outcome":"More relevant matches and booked meetings, a core driver of attendee satisfaction."},{"name":"Personalized Meeting Notes","status":"April *","startPct":52,"endPct":60.3,"what":"Private notes attendees can attach to each meeting or contact.","why":"Attendees had no structured place to capture context before and after meetings.","outcome":"Better follow-up and recall, increasing the business value attendees get from meetings."},{"name":"Meeting Formats Rearrangement","status":"In Progress","startPct":38.3,"endPct":49.2,"what":"Reorganised meeting formats and settings so organisers can configure meeting types more clearly.","why":"The existing formats were confusing to set up, causing configuration errors.","outcome":"Faster, error-free meeting setup for organisers running structured programmes."},{"name":"Session Calendar (Phased Q2)","status":"Q2 *","startPct":50,"endPct":100,"what":"A calendar view that unifies sessions and meetings into a single schedule, delivered in phases.","why":"Attendees juggle sessions and meetings in separate places, causing clashes and missed items.","outcome":"A single reliable schedule that reduces conflicts and lifts attendance across the programme."},{"name":"Meeting Program Multi-Client","status":"Q2 *","startPct":50,"endPct":100,"what":"Support for running structured meeting programmes across multiple client events, delivered in phases.","why":"Organisers managing several events could not reuse a meeting programme setup between them.","outcome":"Reusable programme configuration that scales meetings across an organiser's portfolio."}]},{"name":"Lead Capture & Exhibitor Intelligence","accent":"#d97706","features":[{"name":"OCR Badge Scanning","status":"In Progress","startPct":39.2,"endPct":50,"what":"Badge scanning that reads printed badge details using on-device OCR.","why":"Exhibitors needed a fast way to capture leads even when a badge has no scannable code.","outcome":"More leads captured per exhibitor, strengthening exhibitor return on investment."},{"name":"AI Notetaker: Admin Config","status":"May *","startPct":66.7,"endPct":75,"what":"Admin controls to configure the AI meeting notetaker for an event.","why":"Organisers need to govern where and how AI note-taking is enabled before selling it.","outcome":"Controlled rollout of AI notes that unlocks a new exhibitor-facing capability."},{"name":"AI Notetaker: Exhibitor Purchase","status":"May *","startPct":68,"endPct":76.3,"what":"A purchase flow that lets exhibitors buy AI note-taking for their lead conversations.","why":"There was no self-serve way for exhibitors to pay for and enable AI notes.","outcome":"A new monetisable add-on that grows per-event exhibitor revenue."},{"name":"Lead Questions Default State","status":"April *","startPct":54,"endPct":62.3,"what":"Sensible default settings for lead qualification questions on the scanning app.","why":"Exhibitors often skipped setup, leaving lead capture forms empty and inconsistent.","outcome":"Better structured lead data out of the box, improving lead quality for exhibitors."},{"name":"Lead Qualification Dashboard","status":"Q2 *","startPct":50,"endPct":100,"what":"A dashboard where exhibitors review, score, and qualify captured leads, delivered in phases.","why":"Exhibitors capture leads but lack a clear place to prioritise and action them.","outcome":"Faster lead follow-up and stronger ROI evidence that supports exhibitor renewals."}]},{"name":"Sponsorship & Monetisation","accent":"#db2777","features":[{"name":"Random Sorting for Sponsors","status":"In Progress","startPct":36.7,"endPct":47.5,"what":"Randomised sponsor ordering so exposure is shared fairly across sponsor listings.","why":"Fixed ordering gave the top sponsors permanent prominence, causing fairness complaints.","outcome":"Fairer sponsor exposure that protects sponsorship value and reduces disputes."},{"name":"Sponsorship Export Improvements","status":"In Progress","startPct":40,"endPct":49.2,"what":"Improved exports of sponsorship placements, performance, and inventory.","why":"Organisers stitched sponsorship reporting together manually across spreadsheets.","outcome":"Faster sponsorship reporting that helps organisers prove value and resell inventory."},{"name":"Exhibitor Logo Monetisation","status":"Q2 *","startPct":50,"endPct":100,"what":"Paid logo placement options for exhibitors across the event website and app, delivered in phases.","why":"Prominent logo placement is a proven upsell that the platform did not package cleanly.","outcome":"A new sponsorship revenue stream that organisers can sell without custom work."}]},{"name":"Organizer Tools & Event Setup","accent":"#4f46e5","features":[{"name":"Clone Custom Filters","status":"Shipped","startPct":4.2,"endPct":20.8,"what":"The ability to clone custom filter configurations between lists or events.","why":"Organisers rebuilt the same filters repeatedly, wasting setup time.","outcome":"Faster event setup and fewer configuration errors for organiser teams."},{"name":"Event Cloning Warning Banner","status":"Shipped","startPct":20.8,"endPct":37.5,"what":"A warning banner that clarifies what will and will not carry over when cloning an event.","why":"Organisers cloned events with wrong assumptions, leading to data and config mistakes.","outcome":"Fewer cloning errors and support tickets during event setup."},{"name":"Multi-Language Exhibitor Manual","status":"In Progress","startPct":38.3,"endPct":49.2,"what":"Multi-language support for the exhibitor manual and instructions.","why":"International exhibitors received guidance only in one language, slowing onboarding.","outcome":"Smoother exhibitor onboarding for global events and less manual support."},{"name":"Email Digest","status":"June *","startPct":84,"endPct":92.3,"what":"A scheduled email digest summarising key event activity for organisers.","why":"Organisers had to log in repeatedly to check on event progress.","outcome":"Better-informed organisers and stronger ongoing engagement with the platform."},{"name":"Organizer Onboarding Journey","status":"Q2 *","startPct":50,"endPct":100,"what":"A guided onboarding journey that walks new organisers through core setup, delivered in phases.","why":"New organisers faced a steep learning curve and leaned heavily on support.","outcome":"Faster time to first event and lower onboarding cost per organiser."},{"name":"Auto-Select Child Categories","status":"April *","startPct":56,"endPct":64.3,"what":"Automatic selection of child categories when a parent category is chosen.","why":"Organisers manually re-selected nested categories, which was slow and error-prone.","outcome":"Faster categorisation and more consistent taxonomy across event content."},{"name":"Registration as Separate Service","status":"Q2 *","startPct":50,"endPct":100,"what":"Re-architecting registration into a standalone service, delivered in phases.","why":"Registration was tightly coupled to the monolith, limiting scale and reliability at peak.","outcome":"A more scalable, resilient registration flow that protects revenue during launch spikes."}]}]}</script>
+<script>
+(function(){
+  "use strict";
+  var DATA = JSON.parse(document.getElementById("roadmap-data").textContent);
+
+  // ---- status -> css class + badge label -------------------------------
+  function statusClass(s){
+    switch(s){
+      case "Shipped": return "shipped";
+      case "In Progress": return "progress";
+      case "Blocked": return "blocked";
+      case "Q2 *": return "phased";
+      case "April *":
+      case "May *":
+      case "June *": return "upcoming";
+      default: return "upcoming";
+    }
+  }
+  function badgeText(s){ return s; }
+
+  // ---- flatten features (keep theme ref) --------------------------------
+  var themes = DATA.themes || [];
+  var allFeatures = [];
+  themes.forEach(function(t, ti){
+    (t.features||[]).forEach(function(f, fi){
+      allFeatures.push({f:f, theme:t, ti:ti, fi:fi, id:"f-"+ti+"-"+fi});
+    });
+  });
+
+  // ---- computed summary numbers -----------------------------------------
+  var nShipped = 0, nProgBlocked = 0, nUpcoming = 0;
+  allFeatures.forEach(function(x){
+    var s = x.f.status;
+    if(s === "Shipped") nShipped++;
+    else if(s === "In Progress" || s === "Blocked") nProgBlocked++;
+    else nUpcoming++; // April*/May*/June*/Q2*
+  });
+  var nThemes = themes.length;
+  var nTotal = allFeatures.length;
+
+  // ---- header -----------------------------------------------------------
+  document.getElementById("epTitle").textContent = DATA.title || "";
+  document.getElementById("epSub").textContent = DATA.subtitle || "";
+  document.getElementById("epTeam").textContent = DATA.team || "";
+  document.getElementById("epUpdated").textContent = "Last updated: " + (DATA.lastUpdated || "");
+  document.getElementById("footer").textContent = DATA.footer || "";
+
+  // ---- summary chips ----------------------------------------------------
+  var chipDefs = [
+    {num:nShipped, lbl:"Shipped", c:"var(--green)"},
+    {num:nProgBlocked, lbl:"In Progress / Blocked", c:"var(--orange)"},
+    {num:nUpcoming, lbl:"Upcoming (Apr-Jun)", c:"var(--blue)"},
+    {num:nThemes, lbl:"Product Themes", c:"var(--purple)"}
+  ];
+  var chipsEl = document.getElementById("chips");
+  chipDefs.forEach(function(c){
+    var d = document.createElement("div");
+    d.className = "chip"; d.style.setProperty("--c", c.c);
+    var n = document.createElement("div"); n.className="num"; n.textContent = String(c.num);
+    var l = document.createElement("div"); l.className="lbl"; l.textContent = c.lbl;
+    d.appendChild(n); d.appendChild(l); chipsEl.appendChild(d);
+  });
+
+  // ---- quarter + month headers ------------------------------------------
+  var months = DATA.months || [];
+  var quarters = DATA.quarters || [];
+  var qEl = document.getElementById("qcells");
+  quarters.forEach(function(q){
+    var c = document.createElement("div");
+    c.className = "qcell";
+    c.style.flex = (q.span||1) + " 1 0";
+    c.textContent = q.label;
+    qEl.appendChild(c);
+  });
+  var mEl = document.getElementById("mcells");
+  months.forEach(function(m){
+    var c = document.createElement("div"); c.className="mcell"; c.textContent = m; mEl.appendChild(c);
+  });
+
+  // ---- today line -------------------------------------------------------
+  var todayPct = (typeof DATA.todayPct === "number") ? DATA.todayPct : 46;
+  document.getElementById("todayLineHead").style.left = "calc(var(--namecol) + (100% - var(--namecol)) * " + (todayPct/100) + ")";
+
+  // ---- filter state -----------------------------------------------------
+  var FILTERS = [
+    {key:"all", label:"All", test:function(){ return true; }},
+    {key:"shipped", label:"Shipped", test:function(s){ return s==="Shipped"; }},
+    {key:"progress", label:"In Progress", test:function(s){ return s==="In Progress"; }},
+    {key:"blocked", label:"Blocked", test:function(s){ return s==="Blocked"; }},
+    {key:"april", label:"April *", test:function(s){ return s==="April *"; }},
+    {key:"may", label:"May *", test:function(s){ return s==="May *"; }},
+    {key:"june", label:"June *", test:function(s){ return s==="June *"; }},
+    {key:"q2", label:"Q2 *", test:function(s){ return s==="Q2 *"; }}
+  ];
+  var activeFilter = "all";
+  var searchTerm = "";
+
+  var pillsEl = document.getElementById("pills");
+  FILTERS.forEach(function(fl){
+    var p = document.createElement("div");
+    p.className = "pill" + (fl.key==="all" ? " active" : "");
+    p.textContent = fl.label;
+    p.setAttribute("data-key", fl.key);
+    p.addEventListener("click", function(){
+      activeFilter = fl.key;
+      Array.prototype.forEach.call(pillsEl.children, function(ch){
+        ch.classList.toggle("active", ch.getAttribute("data-key")===activeFilter);
+      });
+      render();
+    });
+    pillsEl.appendChild(p);
+  });
+
+  var searchInput = document.getElementById("search");
+  searchInput.addEventListener("input", function(){
+    searchTerm = (searchInput.value||"").trim().toLowerCase();
+    render();
+  });
+
+  function matches(x){
+    var f = x.f;
+    var flt = FILTERS.filter(function(z){ return z.key===activeFilter; })[0];
+    if(flt && !flt.test(f.status)) return false;
+    if(searchTerm && (f.name||"").toLowerCase().indexOf(searchTerm) === -1) return false;
+    return true;
+  }
+
+  // ---- build the theme groups + rows (once), then toggle visibility -----
+  var groupsEl = document.getElementById("groups");
+  var openRowId = null;
+
+  function buildGrid(){
+    var frag = document.createDocumentFragment();
+    themes.forEach(function(t, ti){
+      var head = document.createElement("div");
+      head.className = "theme-head";
+      head.style.setProperty("--acc", t.accent || "#0891b2");
+      head.setAttribute("data-theme", String(ti));
+
+      var bar = document.createElement("div"); bar.className="bar";
+      var caret = document.createElement("div"); caret.className="caret"; caret.textContent="▼";
+      var nm = document.createElement("div"); nm.className="tname"; nm.textContent = t.name || "";
+      var badge = document.createElement("div"); badge.className="badge";
+      badge.textContent = String((t.features||[]).length);
+      head.appendChild(bar); head.appendChild(caret); head.appendChild(nm); head.appendChild(badge);
+
+      head.addEventListener("click", function(){ head.classList.toggle("collapsed"); });
+
+      var rows = document.createElement("div");
+      rows.className = "theme-rows";
+      rows.setAttribute("data-rows", String(ti));
+
+      (t.features||[]).forEach(function(f, fi){
+        var rowId = "f-"+ti+"-"+fi;
+        var sc = statusClass(f.status);
+
+        var row = document.createElement("div");
+        row.className = "item-row";
+        row.setAttribute("data-row", rowId);
+        row.setAttribute("data-status", f.status);
+        row.setAttribute("data-name", (f.name||"").toLowerCase());
+
+        // left: name + status badge
+        var name = document.createElement("div"); name.className="item-name";
+        var fn = document.createElement("span"); fn.className="fname"; fn.textContent = f.name || "";
+        var sb = document.createElement("span"); sb.className="status-badge sb-"+sc; sb.textContent = badgeText(f.status);
+        name.appendChild(fn); name.appendChild(sb);
+
+        // right: track + bar
+        var track = document.createElement("div"); track.className="item-track";
+        var tg = document.createElement("div"); tg.className="track-grid";
+        for(var g=0; g<months.length; g++){ var gg=document.createElement("div"); gg.className="g"; tg.appendChild(gg); }
+        track.appendChild(tg);
+
+        var bar2 = document.createElement("div"); bar2.className="bar bar-"+sc;
+        var sp = Math.max(0, Math.min(100, f.startPct||0));
+        var ep = Math.max(0, Math.min(100, f.endPct||0));
+        if(ep < sp){ var tmp=sp; sp=ep; ep=tmp; }
+        bar2.style.left = sp + "%";
+        bar2.style.width = Math.max(0.5, (ep - sp)) + "%";
+        if(f.status === "Shipped"){
+          var tk = document.createElement("span"); tk.className="tick"; tk.textContent="✓"; bar2.appendChild(tk);
+        }
+        track.appendChild(bar2);
+
+        row.appendChild(name); row.appendChild(track);
+
+        // detail panel
+        var detail = document.createElement("div");
+        detail.className = "detail";
+        detail.setAttribute("data-detail", rowId);
+        var di = document.createElement("div"); di.className="detail-inner";
+        var cls = document.createElement("button"); cls.className="close"; cls.setAttribute("aria-label","Close"); cls.textContent="×";
+        var wwo = document.createElement("div"); wwo.className="wwo";
+        [["What", f.what],["Why", f.why],["Outcome", f.outcome]].forEach(function(pair){
+          var col = document.createElement("div"); col.className="col";
+          var k = document.createElement("div"); k.className="k"; k.textContent = pair[0];
+          var v = document.createElement("div"); v.className="v"; v.textContent = pair[1] || "";
+          col.appendChild(k); col.appendChild(v); wwo.appendChild(col);
+        });
+        di.appendChild(cls); di.appendChild(wwo); detail.appendChild(di);
+
+        cls.addEventListener("click", function(ev){ ev.stopPropagation(); closeRow(); });
+        row.addEventListener("click", function(){ toggleRow(rowId); });
+
+        rows.appendChild(row);
+        rows.appendChild(detail);
+      });
+
+      frag.appendChild(head);
+      frag.appendChild(rows);
+    });
+    groupsEl.appendChild(frag);
+  }
+
+  function closeRow(){
+    if(openRowId){
+      var od = groupsEl.querySelector('[data-detail="'+openRowId+'"]');
+      var orow = groupsEl.querySelector('[data-row="'+openRowId+'"]');
+      if(od) od.classList.remove("show");
+      if(orow) orow.classList.remove("open");
+      openRowId = null;
+    }
+  }
+  function toggleRow(rowId){
+    if(openRowId === rowId){ closeRow(); return; }
+    closeRow();
+    var d = groupsEl.querySelector('[data-detail="'+rowId+'"]');
+    var r = groupsEl.querySelector('[data-row="'+rowId+'"]');
+    if(d) d.classList.add("show");
+    if(r) r.classList.add("open");
+    openRowId = rowId;
+  }
+
+  // ---- render: apply filters + search, update counts --------------------
+  function render(){
+    var visible = 0;
+    themes.forEach(function(t, ti){
+      var rowsWrap = groupsEl.querySelector('[data-rows="'+ti+'"]');
+      var head = groupsEl.querySelector('.theme-head[data-theme="'+ti+'"]');
+      var anyVisible = false;
+      (t.features||[]).forEach(function(f, fi){
+        var rowId = "f-"+ti+"-"+fi;
+        var row = rowsWrap.querySelector('[data-row="'+rowId+'"]');
+        var det = rowsWrap.querySelector('[data-detail="'+rowId+'"]');
+        var show = matches({f:f});
+        row.style.display = show ? "" : "none";
+        if(!show && det){ det.classList.remove("show"); if(openRowId===rowId){ row.classList.remove("open"); openRowId=null; } }
+        if(show){ visible++; anyVisible = true; }
+      });
+      // hide the whole theme group if nothing visible in it
+      head.style.display = anyVisible ? "" : "none";
+      rowsWrap.style.display = anyVisible ? "" : (head.classList.contains("collapsed") ? "none" : "none");
+    });
+    document.getElementById("itemcount").textContent = visible + " item" + (visible===1?"":"s");
+    document.getElementById("empty").style.display = visible===0 ? "block" : "none";
+  }
+
+  buildGrid();
+  render();
+
+  // expose a tiny hook for tests
+  window.roadmapStats = {
+    themes:nThemes, total:nTotal,
+    shipped:nShipped, progressBlocked:nProgBlocked, upcoming:nUpcoming
+  };
+})();
+</script>
+</body>
+</html>
