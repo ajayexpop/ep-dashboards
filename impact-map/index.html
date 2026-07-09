@@ -5,205 +5,427 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 html,body{margin:0;background:#e9e9e4;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
-.slide{width:100%;max-width:1280px;margin:0 auto;background:#f7f7f4}
+.stage{position:relative;width:100%;max-width:1280px;margin:0 auto;background:#f7f7f4;overflow:hidden}
+.slide{width:100%;background:#f7f7f4}
 .slide svg{display:block;width:100%;height:auto}
+svg .bubble{cursor:pointer;transition:stroke .12s ease,stroke-width .12s ease,transform .12s ease;transform-box:fill-box;transform-origin:center}
+svg .bubble:hover{stroke:var(--ac);stroke-width:1.8;transform:scale(1.03)}
+svg .leg,svg .cl-rim,svg #theme-status{cursor:pointer}
+svg .cluster,svg .chip,svg .leg{transition:opacity .2s ease}
+.tip{position:fixed;z-index:60;pointer-events:none;max-width:300px;background:#fff;border:1px solid #e6e7eb;border-radius:10px;padding:11px 13px;box-shadow:0 8px 22px rgba(20,24,35,.14);opacity:0;transition:opacity .12s ease;font-size:12.5px;color:#2b303a;line-height:1.45}
+.tip.show{opacity:1}
+.tip .tt-th{font-size:11px;font-weight:600;color:#6b7280;display:flex;align-items:center;margin-bottom:3px}
+.tt-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;flex:0 0 auto}
+.tip .tt-name{font-size:13.5px;font-weight:600;color:#1f2430;margin-bottom:5px;line-height:1.3}
+.tip .tt-row{margin-bottom:3px}.tip .tt-row b{font-weight:700}
+.tt-sep{color:#c4c8ce;margin:0 3px}
+.tip .tt-ini{color:#6b7280;font-size:11.5px;margin-bottom:5px}
+.tip .tt-what{color:#3a3f4b;font-size:11.5px;border-top:1px solid #eef0f2;padding-top:5px;margin-top:2px}
+.panel{position:absolute;top:0;right:0;height:100%;width:332px;max-width:86%;background:#fff;border-left:1px solid #e6e7eb;box-shadow:-10px 0 30px rgba(20,24,35,.10);transform:translateX(103%);transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:50;box-sizing:border-box;overflow:auto}
+.panel.open{transform:none}
+.panel-in{padding:20px 22px 30px}
+.panel-close{position:absolute;top:12px;right:12px;width:28px;height:28px;border:none;background:#f2f3f5;border-radius:50%;color:#6b7280;font-size:17px;line-height:1;cursor:pointer}
+.panel-close:hover{background:#e6e7eb;color:#1f2430}
+.p-th{font-size:11.5px;font-weight:600;color:#6b7280;display:flex;align-items:center;margin:2px 0 8px}
+.p-star{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#9aa1ac;border:1px solid #e6e7eb;border-radius:6px;padding:1px 5px;margin-left:7px}
+.p-name{font-size:18px;font-weight:700;color:#1f2430;margin:0 0 12px;line-height:1.28}
+.p-chip{display:inline-block;color:#fff;font-size:11px;font-weight:600;border-radius:8px;padding:3px 10px;margin-bottom:14px}
+.p-desc{font-size:12.5px;color:#3a3f4b;line-height:1.5;margin-bottom:14px}
+.p-stats{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.p-stat{flex:1;min-width:70px;background:#f7f7f4;border-radius:9px;padding:9px 11px}
+.p-statv{font-size:17px;font-weight:700;color:#1f2430}
+.p-statl{font-size:10.5px;color:#6b7280;margin-top:1px}
+.p-field{margin-bottom:11px}
+.p-lab{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:#9aa1ac;margin-bottom:3px}
+.p-val{font-size:12.5px;color:#2b303a;line-height:1.5}
+.p-top{margin:6px 0 16px;padding:0;list-style:none}
+.p-top li{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:#2b303a;padding:5px 0;border-bottom:1px solid #f0f1f3}
+.p-top li b{font-weight:700;color:#1f2430}
+.p-reset{margin-top:6px;width:100%;border:1px solid #e6e7eb;background:#fff;border-radius:9px;padding:9px;font-size:12px;font-weight:600;color:#3a3f4b;cursor:pointer}
+.p-reset:hover{background:#f7f7f4}
+@media (max-width:640px){.panel{width:300px}}
 </style>
-<div class="slide"><svg viewBox="0 0 1280 720" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif" role="img" aria-label="Product Impact Map FY26">
-<rect x="0" y="0" width="1280" height="720" fill="#f7f7f4"/>
+<div class="stage">
+<div class="slide"><svg id="impact-svg" viewBox="0 0 1280 720" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif" role="img" aria-label="Product Impact Map FY26">
+<rect id="bg" x="0" y="0" width="1280" height="720" fill="#f7f7f4"/>
 <text x="64" y="60" font-size="26" font-weight="700" fill="#1f2430" letter-spacing="0.2">Product Impact Map - FY26</text>
-<text x="64" y="84" font-size="13.5" font-weight="400" fill="#6b7280">Everything shipped in 2026, sized by assessed value</text>
+<text x="64" y="84" font-size="13.5" font-weight="400" fill="#6b7280">Everything shipped in 2026, rolled up to epics and sized by assessed value</text>
+<text x="1216" y="60" text-anchor="end" font-size="13" font-weight="600" fill="#3a3f4b">242 stories &#183; 13,044 value &#183; 6 themes</text>
+<g id="legend">
+<g class="leg" data-cl="AI">
+<rect x="64.0" y="101.0" width="212" height="20" fill="transparent"/>
 <circle cx="71.0" cy="112.0" r="5" fill="#4f46e5"/>
 <text x="82.0" y="116.0" font-size="12" font-weight="600" fill="#3a3f4b">AI &amp; Automation *</text>
+</g>
+<g class="leg" data-cl="COST">
+<rect x="364.0" y="101.0" width="212" height="20" fill="transparent"/>
 <circle cx="371.0" cy="112.0" r="5" fill="#0891b2"/>
 <text x="382.0" y="116.0" font-size="12" font-weight="600" fill="#3a3f4b">Cost &amp; Labour Reduction *</text>
+</g>
+<g class="leg" data-cl="REV">
+<rect x="64.0" y="123.0" width="212" height="20" fill="transparent"/>
 <circle cx="71.0" cy="134.0" r="5" fill="#d97706"/>
 <text x="82.0" y="138.0" font-size="12" font-weight="400" fill="#3a3f4b">Revenue &amp; Monetisation</text>
+</g>
+<g class="leg" data-cl="DATA">
+<rect x="364.0" y="123.0" width="212" height="20" fill="transparent"/>
 <circle cx="371.0" cy="134.0" r="5" fill="#16a34a"/>
 <text x="382.0" y="138.0" font-size="12" font-weight="400" fill="#3a3f4b">Data, Insight &amp; Trust</text>
+</g>
+<g class="leg" data-cl="INTEG">
+<rect x="64.0" y="145.0" width="212" height="20" fill="transparent"/>
 <circle cx="71.0" cy="156.0" r="5" fill="#2563eb"/>
 <text x="82.0" y="160.0" font-size="12" font-weight="400" fill="#3a3f4b">Integrations &amp; Platform</text>
+</g>
+<g class="leg" data-cl="EXP">
+<rect x="364.0" y="145.0" width="212" height="20" fill="transparent"/>
 <circle cx="371.0" cy="156.0" r="5" fill="#db2777"/>
 <text x="382.0" y="160.0" font-size="12" font-weight="400" fill="#3a3f4b">Experience &amp; Engagement</text>
+</g>
+</g>
+<text id="theme-status" x="66" y="182" font-size="11.5" fill="#9aa1ac">All themes</text>
+<g id="clusters">
+<g class="cluster" data-cl="AI">
+<g class="cl-rim" data-cl="AI">
 <circle cx="144.68" cy="390.00" r="97.68" fill="none" stroke="#4f46e5" stroke-width="2.0" stroke-opacity="0.95"/>
 <text x="144.68" y="283.32" text-anchor="middle" font-size="13.5" font-weight="600" fill="#4f46e5">AI &amp; Automation</text>
 <circle cx="72.91" cy="274.57" r="3" fill="#4f46e5"/>
-<g><title>Search Anatomy  -  Search &amp; Discovery - attendees find the right people and content instantly  (value 692, 11 stories, 6 shipped)  -  The AI Search stack was deployed to AWS ECS behind a load balancer with health checks, auto-restart, and traffic- and queue-based auto-scaling, making search production-grade and resilient.</title>
-<circle cx="124.95" cy="374.72" r="35.90" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
-<text x="124.95" y="371.57" text-anchor="middle" font-size="15" font-weight="500" fill="#2b303a">Search</text>
-<text x="124.95" y="387.47" text-anchor="middle" font-size="15" font-weight="500" fill="#2b303a">Anatomy</text>
 </g>
-<g><title>Qdrant Pilot (IMEX)  -  AI first paradigm - AI agents  (value 524, 10 stories, 10 shipped)  -  Search autocomplete now prioritises name matches over description matches, so attendees see the most relevant entity at the top of suggestion results.</title>
-<circle cx="192.93" cy="374.72" r="31.24" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
-<text x="192.93" y="371.78" text-anchor="middle" font-size="14" font-weight="500" fill="#2b303a">Qdrant</text>
-<text x="192.93" y="386.62" text-anchor="middle" font-size="14" font-weight="500" fill="#2b303a">Pilot</text>
+<g class="bg" data-epic="0"><title>Search Anatomy  -  Search &amp; Discovery - attendees find the right people and content instantly  (value 692, 11 stories, 6 shipped)  -  The AI Search stack was deployed to AWS ECS behind a load balancer with health checks, auto-restart, and traffic- and queue-based auto-scaling, making search production-grade and resilient.</title>
+<circle id="b0" class="bubble" data-epic="0" style="--ac:#4f46e5" cx="124.95" cy="374.72" r="35.90" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text pointer-events="none" x="124.95" y="371.57" text-anchor="middle" font-size="15" font-weight="500" fill="#2b303a">Search</text>
+<text pointer-events="none" x="124.95" y="387.47" text-anchor="middle" font-size="15" font-weight="500" fill="#2b303a">Anatomy</text>
 </g>
-<g><title>Recreate category-based Recommendation Service  -  New Recommendation service  (value 373, 5 stories, 4 shipped)  -  Cutting the recommendation service&#x27;s cold-start time (previously 30-50s on a tenant&#x27;s first request) sharply improves responsiveness of matchmaking for the first user of each event.</title>
-<circle cx="162.92" cy="425.11" r="26.35" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<g class="bg" data-epic="1"><title>Qdrant Pilot (IMEX)  -  AI first paradigm - AI agents  (value 524, 10 stories, 10 shipped)  -  Search autocomplete now prioritises name matches over description matches, so attendees see the most relevant entity at the top of suggestion results.</title>
+<circle id="b1" class="bubble" data-epic="1" style="--ac:#4f46e5" cx="192.93" cy="374.72" r="31.24" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text pointer-events="none" x="192.93" y="371.78" text-anchor="middle" font-size="14" font-weight="500" fill="#2b303a">Qdrant</text>
+<text pointer-events="none" x="192.93" y="386.62" text-anchor="middle" font-size="14" font-weight="500" fill="#2b303a">Pilot</text>
 </g>
-<g><title>Meeting Transcription Tool (MTT, a.k.a. AI Meeting notes) transforming from POC to prod &amp; refactoring  -  AI first paradigm - AI agents  (value 353, 6 stories, 4 shipped)  -  AI meeting-notes now sends one shared action-point list to all participants instead of per-person lists, eliminating a defect where misattributed speakers sent people the wrong action items.</title>
-<circle cx="110.91" cy="435.51" r="25.65" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
-<text x="110.91" y="432.78" text-anchor="middle" font-size="13" font-weight="500" fill="#2b303a">AI</text>
-<text x="110.91" y="446.56" text-anchor="middle" font-size="13" font-weight="500" fill="#2b303a">Notes</text>
+<g class="bg" data-epic="2"><title>Recreate category-based Recommendation Service  -  New Recommendation service  (value 373, 5 stories, 4 shipped)  -  Cutting the recommendation service&#x27;s cold-start time (previously 30-50s on a tenant&#x27;s first request) sharply improves responsiveness of matchmaking for the first user of each event.</title>
+<circle id="b2" class="bubble" data-epic="2" style="--ac:#4f46e5" cx="162.92" cy="425.11" r="26.35" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
 </g>
-<g><title>AI Search Service (tools)  -  AI first paradigm - AI agents  (value 200, 1 stories, 1 shipped)  -  A new AI search service was developed and deployed behind an API tool, letting participants semantically search exhibitor profiles, team members and products, and laying core AI search infrastructure for the platform.</title>
-<circle cx="76.91" cy="403.59" r="19.30" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<g class="bg" data-epic="3"><title>Meeting Transcription Tool (MTT, a.k.a. AI Meeting notes) transforming from POC to prod &amp; refactoring  -  AI first paradigm - AI agents  (value 353, 6 stories, 4 shipped)  -  AI meeting-notes now sends one shared action-point list to all participants instead of per-person lists, eliminating a defect where misattributed speakers sent people the wrong action items.</title>
+<circle id="b3" class="bubble" data-epic="3" style="--ac:#4f46e5" cx="110.91" cy="435.51" r="25.65" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text pointer-events="none" x="110.91" y="432.78" text-anchor="middle" font-size="13" font-weight="500" fill="#2b303a">AI</text>
+<text pointer-events="none" x="110.91" y="446.56" text-anchor="middle" font-size="13" font-weight="500" fill="#2b303a">Notes</text>
 </g>
-<g><title>AI-Assisted Website Builder Phase I  -  Website &amp; Event Site Builder - give organizers a flexible, on-brand event website  (value 124, 5 stories, 0 shipped)  -  Adds the user-facing entry point that lets organizers describe website CSS changes in natural language, the first step of the AI-assisted Website Builder.</title>
-<circle cx="73.40" cy="368.39" r="15.20" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<g class="bg" data-epic="4"><title>AI Search Service (tools)  -  AI first paradigm - AI agents  (value 200, 1 stories, 1 shipped)  -  A new AI search service was developed and deployed behind an API tool, letting participants semantically search exhibitor profiles, team members and products, and laying core AI search infrastructure for the platform.</title>
+<circle id="b4" class="bubble" data-epic="4" style="--ac:#4f46e5" cx="76.91" cy="403.59" r="19.30" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
 </g>
-<g><title>AI Event Assistant (AGENT)  -  AI first paradigm - AI agents  (value 48, 1 stories, 1 shipped)  -  Built the sessions/agenda knowledge tool for the Phase-1 AI assistant so attendees can ask about sessions by day, topic, time or format instead of scrolling the full agenda.</title>
-<circle cx="88.05" cy="346.92" r="9.45" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<g class="bg" data-epic="5"><title>AI-Assisted Website Builder Phase I  -  Website &amp; Event Site Builder - give organizers a flexible, on-brand event website  (value 124, 5 stories, 0 shipped)  -  Adds the user-facing entry point that lets organizers describe website CSS changes in natural language, the first step of the AI-assisted Website Builder.</title>
+<circle id="b5" class="bubble" data-epic="5" style="--ac:#4f46e5" cx="73.40" cy="368.39" r="15.20" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
 </g>
-<g><title>Rolling out new solution  -  New Recommendation service  (value 16, 1 stories, 0 shipped)  -  Re-architects the recommendation service to the Data Science team&#x27;s aligned rollout plan, cutting the high cost of running the current architecture while preserving existing recommendation behaviour.</title>
-<circle cx="101.96" cy="339.33" r="5.46" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<g class="bg" data-epic="6"><title>AI Event Assistant (AGENT)  -  AI first paradigm - AI agents  (value 48, 1 stories, 1 shipped)  -  Built the sessions/agenda knowledge tool for the Phase-1 AI assistant so attendees can ask about sessions by day, topic, time or format instead of scrolling the full agenda.</title>
+<circle id="b6" class="bubble" data-epic="6" style="--ac:#4f46e5" cx="88.05" cy="346.92" r="9.45" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
 </g>
+<g class="bg" data-epic="7"><title>Rolling out new solution  -  New Recommendation service  (value 16, 1 stories, 0 shipped)  -  Re-architects the recommendation service to the Data Science team&#x27;s aligned rollout plan, cutting the high cost of running the current architecture while preserving existing recommendation behaviour.</title>
+<circle id="b7" class="bubble" data-epic="7" style="--ac:#4f46e5" cx="101.96" cy="339.33" r="5.46" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+</g>
+</g>
+<g class="cluster" data-cl="COST">
+<g class="cl-rim" data-cl="COST">
 <circle cx="341.87" cy="390.00" r="79.51" fill="none" stroke="#0891b2" stroke-width="2.0" stroke-opacity="0.95"/>
 <text x="341.87" y="301.49" text-anchor="middle" font-size="13.5" font-weight="600" fill="#0891b2">Cost &amp; Labour</text>
 <circle cx="278.46" cy="292.74" r="3" fill="#0891b2"/>
-<g><title>Hyve Q1.26 delievery  -  Not Clearly Specified  (value 899, 10 stories, 10 shipped)  -  The user-facing side of No Show lets meeting participants themselves register a counterpart&#x27;s no-show, feeding attendance accuracy from both sides of each meeting.</title>
-<circle cx="313.76" cy="388.37" r="40.91" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
-<text x="313.76" y="385.22" text-anchor="middle" font-size="15" font-weight="500" fill="#2b303a">Hyve Q1</text>
-<text x="313.76" y="401.12" text-anchor="middle" font-size="15" font-weight="500" fill="#2b303a">Delivery</text>
 </g>
-<g><title>Native Integrations - Migrations  -  Native Integration - Migration to Abstract Integration Schema  (value 428, 4 stories, 3 shipped)  -  The ExpoFP floorplan integration was migrated onto the platform&#x27;s Integration Hub auto-update framework, gaining self-healing and a logs viewer so exhibitor sync stays accurate without manual developer intervention.</title>
-<circle cx="383.75" cy="388.37" r="28.23" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<g class="bg" data-epic="8"><title>Hyve Q1.26 delievery  -  Not Clearly Specified  (value 899, 10 stories, 10 shipped)  -  The user-facing side of No Show lets meeting participants themselves register a counterpart&#x27;s no-show, feeding attendance accuracy from both sides of each meeting.</title>
+<circle id="b8" class="bubble" data-epic="8" style="--ac:#0891b2" cx="313.76" cy="388.37" r="40.91" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text pointer-events="none" x="313.76" y="385.22" text-anchor="middle" font-size="15" font-weight="500" fill="#2b303a">Hyve Q1</text>
+<text pointer-events="none" x="313.76" y="401.12" text-anchor="middle" font-size="15" font-weight="500" fill="#2b303a">Delivery</text>
 </g>
-<g><title>Meeting Formats: Admin Re-arrangement  -  Meetings &amp; Networking - turn matchmaking into meetings that actually happen  (value 272, 6 stories, 6 shipped)  -  Module management for Meeting Format was restructured in the admin panel, providing a cleaner foundation for how organizers configure meeting-format modules.</title>
-<circle cx="359.20" cy="433.81" r="22.51" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
-<text x="359.20" y="431.92" text-anchor="middle" font-size="9" font-weight="500" fill="#2b303a">Meeting</text>
-<text x="359.20" y="441.46" text-anchor="middle" font-size="9" font-weight="500" fill="#2b303a">Formats</text>
+<g class="bg" data-epic="9"><title>Native Integrations - Migrations  -  Native Integration - Migration to Abstract Integration Schema  (value 428, 4 stories, 3 shipped)  -  The ExpoFP floorplan integration was migrated onto the platform&#x27;s Integration Hub auto-update framework, gaining self-healing and a logs viewer so exhibitor sync stays accurate without manual developer intervention.</title>
+<circle id="b9" class="bubble" data-epic="9" style="--ac:#0891b2" cx="383.75" cy="388.37" r="28.23" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
 </g>
-<g><title>Client Manager &amp; Onboarding  -  Client Manager Redesign + Onboarding + Admin Panel Redesign  (value 64, 1 stories, 0 shipped)  -  Adds granular checkboxes to event cloning so organizers choose exactly which content (sponsors, news, sessions, local categories, floor plan) carries over, removing hours of manual cleanup on large events.</title>
-<circle cx="324.71" cy="439.89" r="10.92" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<g class="bg" data-epic="10"><title>Meeting Formats: Admin Re-arrangement  -  Meetings &amp; Networking - turn matchmaking into meetings that actually happen  (value 272, 6 stories, 6 shipped)  -  Module management for Meeting Format was restructured in the admin panel, providing a cleaner foundation for how organizers configure meeting-format modules.</title>
+<circle id="b10" class="bubble" data-epic="10" style="--ac:#0891b2" cx="359.20" cy="433.81" r="22.51" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text pointer-events="none" x="359.20" y="431.92" text-anchor="middle" font-size="9" font-weight="500" fill="#2b303a">Meeting</text>
+<text pointer-events="none" x="359.20" y="441.46" text-anchor="middle" font-size="9" font-weight="500" fill="#2b303a">Formats</text>
 </g>
-<g><title>Customer Feature Requests  -  Not Clearly Specified  (value 48, 1 stories, 1 shipped)  -  Added natural-order sorting and multi-select bulk delete to the internal floorplan, sharply cutting the manual effort organizers spend managing halls and stands for large events.</title>
-<circle cx="303.11" cy="438.46" r="9.45" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<g class="bg" data-epic="11"><title>Client Manager &amp; Onboarding  -  Client Manager Redesign + Onboarding + Admin Panel Redesign  (value 64, 1 stories, 0 shipped)  -  Adds granular checkboxes to event cloning so organizers choose exactly which content (sponsors, news, sessions, local categories, floor plan) carries over, removing hours of manual cleanup on large events.</title>
+<circle id="b11" class="bubble" data-epic="11" style="--ac:#0891b2" cx="324.71" cy="439.89" r="10.92" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
 </g>
+<g class="bg" data-epic="12"><title>Customer Feature Requests  -  Not Clearly Specified  (value 48, 1 stories, 1 shipped)  -  Added natural-order sorting and multi-select bulk delete to the internal floorplan, sharply cutting the manual effort organizers spend managing halls and stands for large events.</title>
+<circle id="b12" class="bubble" data-epic="12" style="--ac:#0891b2" cx="303.11" cy="438.46" r="9.45" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+</g>
+</g>
+<g class="cluster" data-cl="EXP">
+<g class="cl-rim" data-cl="EXP">
 <circle cx="546.59" cy="390.00" r="105.21" fill="none" stroke="#db2777" stroke-width="1.5" stroke-opacity="0.8"/>
 <text x="546.59" y="275.79" text-anchor="middle" font-size="13.5" font-weight="600" fill="#db2777">Experience</text>
 <text x="546.59" y="510.21" text-anchor="middle" font-size="10.5" fill="#9aa1ac">+3 more</text>
-<g><title>Exhibitor profile  -  Exhibitor Experience - a polished, self-serve exhibitor presence  (value 457, 6 stories, 6 shipped)  -  Adds the hosting Exhibitor&#x27;s name to Exhibitor Event detail cards so attendees can identify the organizer without returning to the list view.</title>
-<circle cx="541.61" cy="384.06" r="29.18" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
-<text x="541.61" y="382.17" text-anchor="middle" font-size="9" font-weight="500" fill="#2b303a">Exhibitor</text>
-<text x="541.61" y="391.71" text-anchor="middle" font-size="9" font-weight="500" fill="#2b303a">Profile</text>
 </g>
-<g><title>API V3 &amp; Integrations 2026  -  API V3  (value 396, 5 stories, 4 shipped)  -  The final tranche of work for the MYS native integration was delivered, closing out the remaining gaps so the MYS client&#x27;s end-to-end integration needs are fully met.</title>
-<circle cx="598.79" cy="384.06" r="27.15" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
-<text x="598.79" y="387.26" text-anchor="middle" font-size="10" font-weight="500" fill="#2b303a">API v3</text>
+<g class="bg" data-epic="13"><title>Exhibitor profile  -  Exhibitor Experience - a polished, self-serve exhibitor presence  (value 457, 6 stories, 6 shipped)  -  Adds the hosting Exhibitor&#x27;s name to Exhibitor Event detail cards so attendees can identify the organizer without returning to the list view.</title>
+<circle id="b13" class="bubble" data-epic="13" style="--ac:#db2777" cx="541.61" cy="384.06" r="29.18" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text pointer-events="none" x="541.61" y="382.17" text-anchor="middle" font-size="9" font-weight="500" fill="#2b303a">Exhibitor</text>
+<text pointer-events="none" x="541.61" y="391.71" text-anchor="middle" font-size="9" font-weight="500" fill="#2b303a">Profile</text>
 </g>
-<g><title>Sessions &amp; Agenda UX (New UI)  -  Sessions &amp; Agenda Experience - help attendees discover, plan, and never miss a session  (value 390, 5 stories, 3 shipped)  -  Ensures a paid Sponsor&#x27;s organization name is always shown across Session cards, pages, modals, recommendations and round-table/exhibitor-event surfaces, even when no logo is uploaded.</title>
-<circle cx="571.81" cy="432.39" r="26.96" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
-<text x="571.81" y="430.29" text-anchor="middle" font-size="10" font-weight="500" fill="#2b303a">Sessions</text>
-<text x="571.81" y="440.89" text-anchor="middle" font-size="10" font-weight="500" fill="#2b303a">UX</text>
+<g class="bg" data-epic="14"><title>API V3 &amp; Integrations 2026  -  API V3  (value 396, 5 stories, 4 shipped)  -  The final tranche of work for the MYS native integration was delivered, closing out the remaining gaps so the MYS client&#x27;s end-to-end integration needs are fully met.</title>
+<circle id="b14" class="bubble" data-epic="14" style="--ac:#db2777" cx="598.79" cy="384.06" r="27.15" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text pointer-events="none" x="598.79" y="387.26" text-anchor="middle" font-size="10" font-weight="500" fill="#2b303a">API v3</text>
 </g>
-<g><title>Participant Registration on New UI  -  Registration Re-platform - one unified, higher-converting signup flow  (value 304, 4 stories, 3 shipped)  -  Login was split into two clear flows, SAML SSO for buyers and standard EP login for API-created team members, so both user types can authenticate without the SSO path blocking those who need credentials.</title>
-<circle cx="519.72" cy="433.23" r="23.79" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<g class="bg" data-epic="15"><title>Sessions &amp; Agenda UX (New UI)  -  Sessions &amp; Agenda Experience - help attendees discover, plan, and never miss a session  (value 390, 5 stories, 3 shipped)  -  Ensures a paid Sponsor&#x27;s organization name is always shown across Session cards, pages, modals, recommendations and round-table/exhibitor-event surfaces, even when no logo is uploaded.</title>
+<circle id="b15" class="bubble" data-epic="15" style="--ac:#db2777" cx="571.81" cy="432.39" r="26.96" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text pointer-events="none" x="571.81" y="430.29" text-anchor="middle" font-size="10" font-weight="500" fill="#2b303a">Sessions</text>
+<text pointer-events="none" x="571.81" y="440.89" text-anchor="middle" font-size="10" font-weight="500" fill="#2b303a">UX</text>
 </g>
-<g><title>Mobile App - 2026 Enhancements  -  Mobile App - a first-class on-site experience in the pocket  (value 294, 5 stories, 3 shipped)  -  Custom badge errors in the Aditus integration now route users to a clear, localized error page (with German) instead of silently reverting to the native badge, so attendees know what action to take.</title>
-<circle cx="489.34" cy="395.17" r="23.41" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
-<text x="489.34" y="393.07" text-anchor="middle" font-size="10" font-weight="500" fill="#2b303a">Mobile</text>
-<text x="489.34" y="403.67" text-anchor="middle" font-size="10" font-weight="500" fill="#2b303a">App</text>
+<g class="bg" data-epic="16"><title>Participant Registration on New UI  -  Registration Re-platform - one unified, higher-converting signup flow  (value 304, 4 stories, 3 shipped)  -  Login was split into two clear flows, SAML SSO for buyers and standard EP login for API-created team members, so both user types can authenticate without the SSO path blocking those who need credentials.</title>
+<circle id="b16" class="bubble" data-epic="16" style="--ac:#db2777" cx="519.72" cy="433.23" r="23.79" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
 </g>
-<g><title>Admin Panel CSS Redesign - Phase 1 (5 Core Pages)  -  Admin Redesign  (value 256, 4 stories, 0 shipped)  -  Restyles the Event Setup admin page to the new Untitled UI design language (CSS-only, no markup or logic changes), modernizing one of the most-used organizer setup screens.</title>
-<circle cx="501.88" cy="350.73" r="21.83" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<g class="bg" data-epic="17"><title>Mobile App - 2026 Enhancements  -  Mobile App - a first-class on-site experience in the pocket  (value 294, 5 stories, 3 shipped)  -  Custom badge errors in the Aditus integration now route users to a clear, localized error page (with German) instead of silently reverting to the native badge, so attendees know what action to take.</title>
+<circle id="b17" class="bubble" data-epic="17" style="--ac:#db2777" cx="489.34" cy="395.17" r="23.41" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text pointer-events="none" x="489.34" y="393.07" text-anchor="middle" font-size="10" font-weight="500" fill="#2b303a">Mobile</text>
+<text pointer-events="none" x="489.34" y="403.67" text-anchor="middle" font-size="10" font-weight="500" fill="#2b303a">App</text>
 </g>
-<g><title>Website Builder &amp; Event Site 2026  -  Website &amp; Event Site Builder - give organizers a flexible, on-brand event website  (value 195, 3 stories, 2 shipped)  -  Website Builder now lets organizers hide the call-to-action button on individual cards via a per-card toggle, removing the previous reliance on custom CSS.</title>
-<circle cx="540.75" cy="334.98" r="19.07" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<g class="bg" data-epic="18"><title>Admin Panel CSS Redesign - Phase 1 (5 Core Pages)  -  Admin Redesign  (value 256, 4 stories, 0 shipped)  -  Restyles the Event Setup admin page to the new Untitled UI design language (CSS-only, no markup or logic changes), modernizing one of the most-used organizer setup screens.</title>
+<circle id="b18" class="bubble" data-epic="18" style="--ac:#db2777" cx="501.88" cy="350.73" r="21.83" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
 </g>
-<g><title>Improve Existing Search &amp; Elasticsearch  -  Search &amp; Discovery - attendees find the right people and content instantly  (value 154, 3 stories, 2 shipped)  -  Brought organizer Campaign email recommendation blocks up to the visitor-side standard with clear boundaries and full-width card layouts, so event emails look consistent and professional.</title>
-<circle cx="576.15" cy="345.13" r="16.91" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<g class="bg" data-epic="19"><title>Website Builder &amp; Event Site 2026  -  Website &amp; Event Site Builder - give organizers a flexible, on-brand event website  (value 195, 3 stories, 2 shipped)  -  Website Builder now lets organizers hide the call-to-action button on individual cards via a per-card toggle, removing the previous reliance on custom CSS.</title>
+<circle id="b19" class="bubble" data-epic="19" style="--ac:#db2777" cx="540.75" cy="334.98" r="19.07" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
 </g>
-<g><title>Communication Channels - Email, Chat &amp; Notifications  -  Communication &amp; Engagement - keep every audience informed, connected, and coming back  (value 115, 2 stories, 1 shipped)  -  Messenger now lets users filter conversations by status, cutting the time attendees and exhibitors spend hunting through a cluttered inbox to find active or pending threads.</title>
-<circle cx="512.79" cy="314.67" r="14.65" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<g class="bg" data-epic="20"><title>Improve Existing Search &amp; Elasticsearch  -  Search &amp; Discovery - attendees find the right people and content instantly  (value 154, 3 stories, 2 shipped)  -  Brought organizer Campaign email recommendation blocks up to the visitor-side standard with clear boundaries and full-width card layouts, so event emails look consistent and professional.</title>
+<circle id="b20" class="bubble" data-epic="20" style="--ac:#db2777" cx="576.15" cy="345.13" r="16.91" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
 </g>
+<g class="bg" data-epic="21"><title>Communication Channels - Email, Chat &amp; Notifications  -  Communication &amp; Engagement - keep every audience informed, connected, and coming back  (value 115, 2 stories, 1 shipped)  -  Messenger now lets users filter conversations by status, cutting the time attendees and exhibitors spend hunting through a cluttered inbox to find active or pending threads.</title>
+<circle id="b21" class="bubble" data-epic="21" style="--ac:#db2777" cx="512.79" cy="314.67" r="14.65" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+</g>
+</g>
+<g class="cluster" data-cl="DATA">
+<g class="cl-rim" data-cl="DATA">
 <circle cx="745.35" cy="390.00" r="73.55" fill="none" stroke="#16a34a" stroke-width="1.5" stroke-opacity="0.8"/>
 <text x="745.35" y="307.45" text-anchor="middle" font-size="13.5" font-weight="600" fill="#16a34a">Data &amp; Trust</text>
-<g><title>Improve Meetings &amp; Scheduling  -  Meetings &amp; Networking - turn matchmaking into meetings that actually happen  (value 544, 7 stories, 6 shipped)  -  A toggle now lets organizers fully disable notifications for a specific Meeting Program on Web and App, delivered as an urgent hotfix to meet a HYVE requirement to suppress unwanted meeting alerts.</title>
-<circle cx="716.44" cy="387.22" r="31.83" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
-<text x="716.44" y="385.12" text-anchor="middle" font-size="10" font-weight="500" fill="#2b303a">Meetings &amp;</text>
-<text x="716.44" y="395.72" text-anchor="middle" font-size="10" font-weight="500" fill="#2b303a">Scheduling</text>
 </g>
-<g><title>Automated Event Reporting Dashboards (Embeddable.com)  -  New Analytics  (value 486, 11 stories, 6 shipped)  -  A Sponsorships Deep Dive dashboard was delivered (currently in testing), reporting sponsor performance by asset type for organisers.</title>
-<circle cx="779.21" cy="387.22" r="30.10" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
-<text x="779.21" y="385.12" text-anchor="middle" font-size="10" font-weight="500" fill="#2b303a">Auto</text>
-<text x="779.21" y="395.72" text-anchor="middle" font-size="10" font-weight="500" fill="#2b303a">Reporting</text>
+<g class="bg" data-epic="22"><title>Improve Meetings &amp; Scheduling  -  Meetings &amp; Networking - turn matchmaking into meetings that actually happen  (value 544, 7 stories, 6 shipped)  -  A toggle now lets organizers fully disable notifications for a specific Meeting Program on Web and App, delivered as an urgent hotfix to meet a HYVE requirement to suppress unwanted meeting alerts.</title>
+<circle id="b22" class="bubble" data-epic="22" style="--ac:#16a34a" cx="716.44" cy="387.22" r="31.83" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text pointer-events="none" x="716.44" y="385.12" text-anchor="middle" font-size="10" font-weight="500" fill="#2b303a">Meetings &amp;</text>
+<text pointer-events="none" x="716.44" y="395.72" text-anchor="middle" font-size="10" font-weight="500" fill="#2b303a">Scheduling</text>
 </g>
-<g><title>Attendance &amp; Event Analytics 2026  -  New Analytics  (value 128, 2 stories, 2 shipped)  -  Organizers of co-located events can now compare check-ins across those events and see crossover check-ins in the Total Check-In/Check-Out graph, unlocking shared-attendance insight for multi-event venues.</title>
-<circle cx="748.64" cy="422.98" r="15.44" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<g class="bg" data-epic="23"><title>Automated Event Reporting Dashboards (Embeddable.com)  -  New Analytics  (value 486, 11 stories, 6 shipped)  -  A Sponsorships Deep Dive dashboard was delivered (currently in testing), reporting sponsor performance by asset type for organisers.</title>
+<circle id="b23" class="bubble" data-epic="23" style="--ac:#16a34a" cx="779.21" cy="387.22" r="30.10" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text pointer-events="none" x="779.21" y="385.12" text-anchor="middle" font-size="10" font-weight="500" fill="#2b303a">Auto</text>
+<text pointer-events="none" x="779.21" y="395.72" text-anchor="middle" font-size="10" font-weight="500" fill="#2b303a">Reporting</text>
 </g>
-<g><title>IMEX GDPR Requirements  -  Privacy, GDPR &amp; Compliance - trust by default  (value 112, 1 stories, 0 shipped)  -  Lets privacy-opted-out attendees favourite exhibitors, products and people fully anonymously, satisfying strict GDPR (notably Germany/IMEX) expectations while still hinting interest to the other party via a combined, tooltip-explained count</title>
-<circle cx="719.73" cy="434.22" r="14.44" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
-<text x="719.73" y="437.10" text-anchor="middle" font-size="9" font-weight="500" fill="#2b303a">GDPR</text>
+<g class="bg" data-epic="24"><title>Attendance &amp; Event Analytics 2026  -  New Analytics  (value 128, 2 stories, 2 shipped)  -  Organizers of co-located events can now compare check-ins across those events and see crossover check-ins in the Total Check-In/Check-Out graph, unlocking shared-attendance insight for multi-event venues.</title>
+<circle id="b24" class="bubble" data-epic="24" style="--ac:#16a34a" cx="748.64" cy="422.98" r="15.44" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
 </g>
+<g class="bg" data-epic="25"><title>IMEX GDPR Requirements  -  Privacy, GDPR &amp; Compliance - trust by default  (value 112, 1 stories, 0 shipped)  -  Lets privacy-opted-out attendees favourite exhibitors, products and people fully anonymously, satisfying strict GDPR (notably Germany/IMEX) expectations while still hinting interest to the other party via a combined, tooltip-explained count</title>
+<circle id="b25" class="bubble" data-epic="25" style="--ac:#16a34a" cx="719.73" cy="434.22" r="14.44" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text pointer-events="none" x="719.73" y="437.10" text-anchor="middle" font-size="9" font-weight="500" fill="#2b303a">GDPR</text>
+</g>
+</g>
+<g class="cluster" data-cl="INTEG">
+<g class="cl-rim" data-cl="INTEG">
 <circle cx="949.15" cy="390.00" r="110.24" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-opacity="0.8"/>
 <text x="949.15" y="270.76" text-anchor="middle" font-size="13.5" font-weight="600" fill="#2563eb">Integrations</text>
-<g><title>Platform Performance &amp; Operational Efficiency 2026  -  Scalability &amp; Operational Efficiency - scale to more events with less effort and higher reliability  (value 927, 10 stories, 8 shipped)  -  The AI Search service was made highly available across two AWS zones, load-tested, and costed, de-risking it for production launch.</title>
-<circle cx="917.03" cy="372.25" r="41.55" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
-<text x="917.03" y="369.52" text-anchor="middle" font-size="13" font-weight="500" fill="#2b303a">Perf &amp;</text>
-<text x="917.03" y="383.30" text-anchor="middle" font-size="13" font-weight="500" fill="#2b303a">Efficiency</text>
 </g>
-<g><title>API V2 - Quality Assurance  -  API V2 - Quality Assurance  (value 816, 51 stories, 51 shipped)  -  Hardened the public Open API v2 /api/v2/account/exists endpoint through dedicated QA so external integrators get a reliable, well-tested interface.</title>
-<circle cx="998.41" cy="372.25" r="38.98" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
-<text x="998.41" y="369.10" text-anchor="middle" font-size="15" font-weight="500" fill="#2b303a">API</text>
-<text x="998.41" y="385.00" text-anchor="middle" font-size="15" font-weight="500" fill="#2b303a">V2 QA</text>
+<g class="bg" data-epic="26"><title>Platform Performance &amp; Operational Efficiency 2026  -  Scalability &amp; Operational Efficiency - scale to more events with less effort and higher reliability  (value 927, 10 stories, 8 shipped)  -  The AI Search service was made highly available across two AWS zones, load-tested, and costed, de-risking it for production launch.</title>
+<circle id="b26" class="bubble" data-epic="26" style="--ac:#2563eb" cx="917.03" cy="372.25" r="41.55" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text pointer-events="none" x="917.03" y="369.52" text-anchor="middle" font-size="13" font-weight="500" fill="#2b303a">Perf &amp;</text>
+<text pointer-events="none" x="917.03" y="383.30" text-anchor="middle" font-size="13" font-weight="500" fill="#2b303a">Efficiency</text>
 </g>
-<g><title>Improve Speed Networking Service  -  Improving existing tools  (value 710, 8 stories, 6 shipped)  -  Hardened the Speed Networking algorithm to reject and error on invalid input instead of silently ignoring it, preventing meetings being scheduled into blocked slots - a problem seen after a Hyve event.</title>
-<circle cx="959.92" cy="438.29" r="36.35" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
-<text x="959.92" y="435.98" text-anchor="middle" font-size="11" font-weight="500" fill="#2b303a">Speed</text>
-<text x="959.92" y="447.64" text-anchor="middle" font-size="11" font-weight="500" fill="#2b303a">Networking</text>
+<g class="bg" data-epic="27"><title>API V2 - Quality Assurance  -  API V2 - Quality Assurance  (value 816, 51 stories, 51 shipped)  -  Hardened the public Open API v2 /api/v2/account/exists endpoint through dedicated QA so external integrators get a reliable, well-tested interface.</title>
+<circle id="b27" class="bubble" data-epic="27" style="--ac:#2563eb" cx="998.41" cy="372.25" r="38.98" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text pointer-events="none" x="998.41" y="369.10" text-anchor="middle" font-size="15" font-weight="500" fill="#2b303a">API</text>
+<text pointer-events="none" x="998.41" y="385.00" text-anchor="middle" font-size="15" font-weight="500" fill="#2b303a">V2 QA</text>
 </g>
-<g><title>Migration of endpoints (Public API v3)  -  API V3  (value 432, 14 stories, 11 shipped)  -  Introduced a net-new V3 endpoint to retrieve event sponsors with full profile, category and placement data, broadening the public API&#x27;s coverage for partner integrations.</title>
-<circle cx="893.99" cy="439.15" r="28.36" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
-<text x="893.99" y="437.26" text-anchor="middle" font-size="9" font-weight="500" fill="#2b303a">API v3</text>
-<text x="893.99" y="446.80" text-anchor="middle" font-size="9" font-weight="500" fill="#2b303a">Endpoints</text>
+<g class="bg" data-epic="28"><title>Improve Speed Networking Service  -  Improving existing tools  (value 710, 8 stories, 6 shipped)  -  Hardened the Speed Networking algorithm to reject and error on invalid input instead of silently ignoring it, preventing meetings being scheduled into blocked slots - a problem seen after a Hyve event.</title>
+<circle id="b28" class="bubble" data-epic="28" style="--ac:#2563eb" cx="959.92" cy="438.29" r="36.35" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text pointer-events="none" x="959.92" y="435.98" text-anchor="middle" font-size="11" font-weight="500" fill="#2b303a">Speed</text>
+<text pointer-events="none" x="959.92" y="447.64" text-anchor="middle" font-size="11" font-weight="500" fill="#2b303a">Networking</text>
 </g>
-<g><title>Add new endpoints (v3)  -  API V3  (value 112, 1 stories, 1 shipped)  -  Meetings export was migrated to the V3 public API with rich filtering and incremental sync, letting integration partners pull meeting data reliably and at scale.</title>
-<circle cx="868.83" cy="402.37" r="14.44" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<g class="bg" data-epic="29"><title>Migration of endpoints (Public API v3)  -  API V3  (value 432, 14 stories, 11 shipped)  -  Introduced a net-new V3 endpoint to retrieve event sponsors with full profile, category and placement data, broadening the public API&#x27;s coverage for partner integrations.</title>
+<circle id="b29" class="bubble" data-epic="29" style="--ac:#2563eb" cx="893.99" cy="439.15" r="28.36" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text pointer-events="none" x="893.99" y="437.26" text-anchor="middle" font-size="9" font-weight="500" fill="#2b303a">API v3</text>
+<text pointer-events="none" x="893.99" y="446.80" text-anchor="middle" font-size="9" font-weight="500" fill="#2b303a">Endpoints</text>
 </g>
-<g><title>Migrate Integration-team tests from teststone → PHP (Codeception/Pest) + e2e-testing  -  API V2 - Quality Assurance  (value 32, 2 stories, 0 shipped)  -  The Integration team&#x27;s trial test plans for the Event Statistics and Session Program contexts were migrated from the teststone repository into the e2e testing repository, consolidating test ownership and tooling.</title>
-<circle cx="867.40" cy="379.22" r="7.72" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<g class="bg" data-epic="30"><title>Add new endpoints (v3)  -  API V3  (value 112, 1 stories, 1 shipped)  -  Meetings export was migrated to the V3 public API with rich filtering and incremental sync, letting integration partners pull meeting data reliably and at scale.</title>
+<circle id="b30" class="bubble" data-epic="30" style="--ac:#2563eb" cx="868.83" cy="402.37" r="14.44" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
 </g>
-<g><title>SLOs are established per team  -  ExpoPlatform SLOs establishment  (value 20, 1 stories, 0 shipped)  -  Establishes documented, measurable availability and latency SLOs for every endpoint the Exhibitor team owns, giving engineering leadership service-level visibility into platform reliability.</title>
-<circle cx="869.27" cy="363.83" r="6.10" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<g class="bg" data-epic="31"><title>Migrate Integration-team tests from teststone → PHP (Codeception/Pest) + e2e-testing  -  API V2 - Quality Assurance  (value 32, 2 stories, 0 shipped)  -  The Integration team&#x27;s trial test plans for the Event Statistics and Session Program contexts were migrated from the teststone repository into the e2e testing repository, consolidating test ownership and tooling.</title>
+<circle id="b31" class="bubble" data-epic="31" style="--ac:#2563eb" cx="867.40" cy="379.22" r="7.72" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
 </g>
-<g><title>Covering Existing Functionality with Tests  -  API V2 - Quality Assurance  (value 16, 1 stories, 0 shipped)  -  The Import Participants feature is being brought under full automated-test coverage with consolidated business, technical, and test documentation following the standard quality process.</title>
-<circle cx="958.89" cy="395.45" r="5.46" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<g class="bg" data-epic="32"><title>SLOs are established per team  -  ExpoPlatform SLOs establishment  (value 20, 1 stories, 0 shipped)  -  Establishes documented, measurable availability and latency SLOs for every endpoint the Exhibitor team owns, giving engineering leadership service-level visibility into platform reliability.</title>
+<circle id="b32" class="bubble" data-epic="32" style="--ac:#2563eb" cx="869.27" cy="363.83" r="6.10" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
 </g>
+<g class="bg" data-epic="33"><title>Covering Existing Functionality with Tests  -  API V2 - Quality Assurance  (value 16, 1 stories, 0 shipped)  -  The Import Participants feature is being brought under full automated-test coverage with consolidated business, technical, and test documentation following the standard quality process.</title>
+<circle id="b33" class="bubble" data-epic="33" style="--ac:#2563eb" cx="958.89" cy="395.45" r="5.46" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+</g>
+</g>
+<g class="cluster" data-cl="REV">
+<g class="cl-rim" data-cl="REV">
 <circle cx="1156.19" cy="390.00" r="76.81" fill="none" stroke="#d97706" stroke-width="1.5" stroke-opacity="0.8"/>
 <text x="1156.19" y="304.19" text-anchor="middle" font-size="13.5" font-weight="600" fill="#d97706">Revenue</text>
-<g><title>Lead Capture pro settings  -  Lead Intelligence &amp; Capture - turn every scan into qualified pipeline  (value 775, 12 stories, 11 shipped)  -  Updates how exhibitor lead contribution is calculated so that meeting appointments feed into the lead scoring exhibitors see.</title>
-<circle cx="1125.38" cy="390.00" r="37.99" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
-<text x="1125.38" y="386.85" text-anchor="middle" font-size="15" font-weight="500" fill="#2b303a">Lead</text>
-<text x="1125.38" y="402.75" text-anchor="middle" font-size="15" font-weight="500" fill="#2b303a">Capture</text>
 </g>
-<g><title>Admin Panel Restructure &amp; Navigation  -  Client Manager Redesign + Onboarding + Admin Panel Redesign  (value 496, 7 stories, 7 shipped)  -  Sponsors and sponsored products can now be displayed in randomized order on the web platform, giving every paying sponsor fairer visibility rotation.</title>
-<circle cx="1194.61" cy="390.00" r="30.39" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
-<text x="1194.61" y="388.11" text-anchor="middle" font-size="9" font-weight="500" fill="#2b303a">Admin</text>
-<text x="1194.61" y="397.65" text-anchor="middle" font-size="9" font-weight="500" fill="#2b303a">Navigation</text>
+<g class="bg" data-epic="34"><title>Lead Capture pro settings  -  Lead Intelligence &amp; Capture - turn every scan into qualified pipeline  (value 775, 12 stories, 11 shipped)  -  Updates how exhibitor lead contribution is calculated so that meeting appointments feed into the lead scoring exhibitors see.</title>
+<circle id="b34" class="bubble" data-epic="34" style="--ac:#d97706" cx="1125.38" cy="390.00" r="37.99" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text pointer-events="none" x="1125.38" y="386.85" text-anchor="middle" font-size="15" font-weight="500" fill="#2b303a">Lead</text>
+<text pointer-events="none" x="1125.38" y="402.75" text-anchor="middle" font-size="15" font-weight="500" fill="#2b303a">Capture</text>
 </g>
+<g class="bg" data-epic="35"><title>Admin Panel Restructure &amp; Navigation  -  Client Manager Redesign + Onboarding + Admin Panel Redesign  (value 496, 7 stories, 7 shipped)  -  Sponsors and sponsored products can now be displayed in randomized order on the web platform, giving every paying sponsor fairer visibility rotation.</title>
+<circle id="b35" class="bubble" data-epic="35" style="--ac:#d97706" cx="1194.61" cy="390.00" r="30.39" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text pointer-events="none" x="1194.61" y="388.11" text-anchor="middle" font-size="9" font-weight="500" fill="#2b303a">Admin</text>
+<text pointer-events="none" x="1194.61" y="397.65" text-anchor="middle" font-size="9" font-weight="500" fill="#2b303a">Navigation</text>
+</g>
+</g>
+</g>
+<g id="chips">
+<g class="chip" data-cl="INTEG" style="pointer-events:none">
 <rect x="865.70" y="307.70" width="102.66" height="18.00" rx="8" ry="8" fill="#2563eb"/>
 <text x="917.03" y="320.40" text-anchor="middle" font-size="11" font-weight="600" fill="#ffffff">Platform-wide</text>
+</g>
+<g class="chip" data-cl="COST" style="pointer-events:none">
 <rect x="269.25" y="324.46" width="89.02" height="18.00" rx="8" ry="8" fill="#0891b2"/>
 <text x="313.76" y="337.16" text-anchor="middle" font-size="11" font-weight="600" fill="#ffffff">Labour down</text>
+</g>
+<g class="chip" data-cl="INTEG" style="pointer-events:none">
 <line x1="1032.51" y1="353.36" x2="1071.82" y2="322.05" stroke="#2563eb" stroke-width="0.75" stroke-opacity="0.55"/>
 <rect x="1030.72" y="313.05" width="82.20" height="18.00" rx="8" ry="8" fill="#2563eb"/>
 <text x="1071.82" y="325.75" text-anchor="middle" font-size="11" font-weight="600" fill="#ffffff">51 shipped</text>
+</g>
+<g class="chip" data-cl="REV" style="pointer-events:none">
 <rect x="1084.28" y="432.99" width="82.20" height="18.00" rx="8" ry="8" fill="#d97706"/>
 <text x="1125.38" y="445.69" text-anchor="middle" font-size="11" font-weight="600" fill="#ffffff">11 shipped</text>
+</g>
+<g class="chip" data-cl="AI" style="pointer-events:none">
 <line x1="96.57" y1="352.75" x2="43.72" y2="311.83" stroke="#4f46e5" stroke-width="0.75" stroke-opacity="0.55"/>
 <rect x="16.26" y="302.83" width="54.92" height="18.00" rx="8" ry="8" fill="#4f46e5"/>
 <text x="43.72" y="315.53" text-anchor="middle" font-size="11" font-weight="600" fill="#ffffff">AI-led</text>
+</g>
+<g class="chip" data-cl="DATA" style="pointer-events:none">
 <rect x="678.75" y="332.40" width="75.38" height="18.00" rx="8" ry="8" fill="#16a34a"/>
 <text x="716.44" y="345.10" text-anchor="middle" font-size="11" font-weight="600" fill="#ffffff">6 shipped</text>
+</g>
+<g class="chip" data-cl="AI" style="pointer-events:none">
 <rect x="151.83" y="320.49" width="82.20" height="18.00" rx="8" ry="8" fill="#4f46e5"/>
 <text x="192.93" y="333.19" text-anchor="middle" font-size="11" font-weight="600" fill="#ffffff">10 shipped</text>
+</g>
+<g class="chip" data-cl="EXP" style="pointer-events:none">
 <line x1="522.85" y1="361.71" x2="459.68" y2="286.42" stroke="#db2777" stroke-width="0.75" stroke-opacity="0.55"/>
 <rect x="421.99" y="277.42" width="75.38" height="18.00" rx="8" ry="8" fill="#db2777"/>
 <text x="459.68" y="290.12" text-anchor="middle" font-size="11" font-weight="600" fill="#ffffff">6 shipped</text>
+</g>
+</g>
 <line x1="120" y1="580.0" x2="1150" y2="580.0" stroke="#c4c8ce" stroke-width="1"/>
 <path d="M1150 580.0 l-9 -4.2 l0 8.4 z" fill="#c4c8ce"/>
 <text x="120" y="572.0" font-size="11.5" fill="#8b929c">Q1</text>
 <text x="1140" y="572.0" text-anchor="end" font-size="11.5" fill="#8b929c">Q3  FY26</text>
 <text x="635" y="572.0" text-anchor="middle" font-size="11.5" fill="#b3b8c0">Q1  -&gt;  Q3  FY26</text>
-<text x="64" y="632" font-size="11.5" fill="#9aa1ac">Bubble size = assessed Value Score (Tier x Reach x Impact x Confidence).  AI &amp; Automation and Cost &amp; Labour Reduction highlighted (*).</text>
+<text x="64" y="632" font-size="11.5" fill="#8b929c">Bubble size = assessed Value Score (Tier x Reach x Impact x Confidence) &#183; colour = theme &#183; * featured lens</text>
+<text x="64" y="650" font-size="11" fill="#aab0b8">Hover any bubble for detail &#183; click a bubble to pin it &#183; click a theme to isolate it &#183; Esc resets</text>
+<text x="1014.7" y="603.9" font-size="10.5" font-weight="600" fill="#8b929c">Value scale</text>
+<circle cx="1028.34" cy="682.35" r="13.65" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text x="1028.34" y="709.0" text-anchor="middle" font-size="10" fill="#8b929c">100</text>
+<circle cx="1086.93" cy="667.05" r="28.95" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text x="1086.93" y="709.0" text-anchor="middle" font-size="10" fill="#8b929c">450</text>
+<circle cx="1173.94" cy="653.94" r="42.06" fill="#ffffff" stroke="#cfd3d9" stroke-width="1"/>
+<text x="1173.94" y="709.0" text-anchor="middle" font-size="10" fill="#8b929c">950</text>
 </svg></div>
+<div class="tip" id="tip" role="tooltip" aria-hidden="true"></div>
+<aside class="panel" id="panel" role="dialog" aria-label="Detail" aria-hidden="true">
+<button class="panel-close" id="panel-close" aria-label="Close">&#215;</button>
+<div class="panel-in" id="panel-body"></div>
+</aside>
+</div>
+<script>(function(){
+"use strict";
+var D = {"epics":[{"i":0,"n":"Search Anatomy","l":"Search Anatomy","c":"AI","th":"AI & Automation","co":"#4f46e5","v":692,"st":11,"sh":6,"ini":"Search & Discovery - attendees find the right people and content instantly","w":"The AI Search stack was deployed to AWS ECS behind a load balancer with health checks, auto-restart, and traffic- and queue-based auto-scaling, making search production-grade and resilient.","wy":"Deployment phase of the Search & Discovery initiative to run the service resiliently at scale (Scalability Initiative / Platform Health).","o":"Search API, Ingest service, and pg-listener run on ECS; the Search API sits behind an ALB with /health checks, crashed containers auto-restart, the API auto-scales on traffic, and ingest workers auto-scale on SQS queue depth.","ch":"AI-led"},{"i":1,"n":"Qdrant Pilot (IMEX)","l":"Qdrant Pilot","c":"AI","th":"AI & Automation","co":"#4f46e5","v":524,"st":10,"sh":10,"ini":"AI first paradigm - AI agents","w":"Search autocomplete now prioritises name matches over description matches, so attendees see the most relevant entity at the top of suggestion results.","wy":"Customer Request / Product Vision - correct result ranking is essential to the AI search experience being piloted for events like IMEX.","o":"Autocomplete ranking was changed so name matches are prioritised over description matches across and within entity types.","ch":"AI-led"},{"i":2,"n":"Recreate category-based Recommendation Service","l":"Recommendations","c":"AI","th":"AI & Automation","co":"#4f46e5","v":373,"st":5,"sh":4,"ini":"New Recommendation service","w":"Cutting the recommendation service's cold-start time (previously 30-50s on a tenant's first request) sharply improves responsiveness of matchmaking for the first user of each event.","wy":"Scalability Initiative / Platform Health - slow cold starts degraded the matchmaking experience and needed optimisation.","o":"The recommendation inference cold-start path was optimised to significantly reduce first-request response time without affecting recommendation accuracy.","ch":"AI-led"},{"i":3,"n":"Meeting Transcription Tool (MTT, a.k.a. AI Meeting notes) transforming from POC to prod & refactoring","l":"AI Notes","c":"AI","th":"AI & Automation","co":"#4f46e5","v":353,"st":6,"sh":4,"ini":"AI first paradigm - AI agents","w":"AI meeting-notes now sends one shared action-point list to all participants instead of per-person lists, eliminating a defect where misattributed speakers sent people the wrong action items.","wy":"Platform health/quality fix to make the AI meeting-notes output reliable for all recipients.","o":"Action points are combined into a single list sent identically to every participant, with speaker-name prefixes and a 2-6 item range.","ch":"AI-led"},{"i":4,"n":"AI Search Service (tools)","l":"AI Search","c":"AI","th":"AI & Automation","co":"#4f46e5","v":200,"st":1,"sh":1,"ini":"AI first paradigm - AI agents","w":"A new AI search service was developed and deployed behind an API tool, letting participants semantically search exhibitor profiles, team members and products, and laying core AI search infrastructure for the platform.","wy":"AI readiness initiative to build foundational AI search exposed as a reusable API tool.","o":"Built and deployed an AI search service (exposed via API) covering exhibitor profiles, team-member profiles, and products/sessions, after evaluating PGVector vs Typesense alternatives.","ch":"AI-led"},{"i":5,"n":"AI-Assisted Website Builder Phase I","l":"AI Website Builder","c":"AI","th":"AI & Automation","co":"#4f46e5","v":124,"st":5,"sh":0,"ini":"Website & Event Site Builder - give organizers a flexible, on-brand event website","w":"Adds the user-facing entry point that lets organizers describe website CSS changes in natural language, the first step of the AI-assisted Website Builder.","wy":"Product Vision - foundational UI for the AI-Assisted Website Builder Phase I initiative that moves styling toward self-service AI assistance.","o":"A UI entry point where a user can express desired CSS changes, wiring the front end into the broader AI website-builder flow.","ch":"AI-led"},{"i":6,"n":"AI Event Assistant (AGENT)","l":"AI Assistant","c":"AI","th":"AI & Automation","co":"#4f46e5","v":48,"st":1,"sh":1,"ini":"AI first paradigm - AI agents","w":"Built the sessions/agenda knowledge tool for the Phase-1 AI assistant so attendees can ask about sessions by day, topic, time or format instead of scrolling the full agenda.","wy":"Product Vision / AI Enablement - one of the two core knowledge domains required for the AI agent PoC.","o":"A sessions tool was built and integrated into the AI agent, answering session questions by day, topic, time and format from structured event data.","ch":"AI-led"},{"i":7,"n":"Rolling out new solution","l":"Rec. Rollout","c":"AI","th":"AI & Automation","co":"#4f46e5","v":16,"st":1,"sh":0,"ini":"New Recommendation service","w":"Re-architects the recommendation service to the Data Science team's aligned rollout plan, cutting the high cost of running the current architecture while preserving existing recommendation behaviour.","wy":"Internal Efficiency - reduce the operating cost of the recommendation service per the DS rollout plan.","o":"The recommendation service is updated to the new agreed DS architecture, preserving functionality while updating configuration, dependencies and deployment, validated with tests and monitoring.","ch":"AI-led"},{"i":8,"n":"Hyve Q1.26 delievery","l":"Hyve Q1 Delivery","c":"COST","th":"Cost & Labour Reduction","co":"#0891b2","v":899,"st":10,"sh":10,"ini":"Not Clearly Specified","w":"The user-facing side of No Show lets meeting participants themselves register a counterpart's no-show, feeding attendance accuracy from both sides of each meeting.","wy":"Customer Request / Operational Efficiency - completing the No Show feature on the user side captures attendance signals directly from attendees.","o":"A user-facing No Show capability was delivered so meeting participants can flag no-shows themselves, complementing the admin control.","ch":"Labour down"},{"i":9,"n":"Native Integrations - Migrations","l":"Native Integrations","c":"COST","th":"Cost & Labour Reduction","co":"#0891b2","v":428,"st":4,"sh":3,"ini":"Native Integration - Migration to Abstract Integration Schema","w":"The ExpoFP floorplan integration was migrated onto the platform's Integration Hub auto-update framework, gaining self-healing and a logs viewer so exhibitor sync stays accurate without manual developer intervention.","wy":"Operational Efficiency and Maintenance - consolidating a one-off, error-prone integration onto the standard Integration Hub reduces support load and inherits shared tooling (logs viewer, auto-sync, retained history).","o":"ExpoFP now runs on the Hub's auto-update schema: removed exhibitors are recreated automatically, exhibitor changes batch into a dedicated five-minute sync run, one month of sync history is retained, and the integration inherits the Hub logs viewer.","ch":"Labour down"},{"i":10,"n":"Meeting Formats: Admin Re-arrangement","l":"Meeting Formats","c":"COST","th":"Cost & Labour Reduction","co":"#0891b2","v":272,"st":6,"sh":6,"ini":"Meetings & Networking - turn matchmaking into meetings that actually happen","w":"Module management for Meeting Format was restructured in the admin panel, providing a cleaner foundation for how organizers configure meeting-format modules.","wy":"Operational Efficiency / Product Vision - restructuring module management improves usability and prepares the area for further meeting-format features.","o":"The admin-panel module-management experience for Meeting Format was reorganised into a clearer structure.","ch":"Labour down"},{"i":11,"n":"Client Manager & Onboarding","l":"Client Manager","c":"COST","th":"Cost & Labour Reduction","co":"#0891b2","v":64,"st":1,"sh":0,"ini":"Client Manager Redesign + Onboarding + Admin Panel Redesign","w":"Adds granular checkboxes to event cloning so organizers choose exactly which content (sponsors, news, sessions, local categories, floor plan) carries over, removing hours of manual cleanup on large events.","wy":"Customer Request - reduce manual cleanup for organizers and TAMs (feature request EP-44916).","o":"The cloning dialog exposes independent checkboxes for each content category, so only selected data is carried into the new event.","ch":"Labour down"},{"i":12,"n":"Customer Feature Requests","l":"Customer Requests","c":"COST","th":"Cost & Labour Reduction","co":"#0891b2","v":48,"st":1,"sh":1,"ini":"Not Clearly Specified","w":"Added natural-order sorting and multi-select bulk delete to the internal floorplan, sharply cutting the manual effort organizers spend managing halls and stands for large events.","wy":"Operational Efficiency / Scalability - make floorplan administration viable at large-event scale.","o":"Halls and stands can be returned in natural alphanumeric order and selected (including select-all) for bulk deletion.","ch":"Labour down"},{"i":13,"n":"Exhibitor profile","l":"Exhibitor Profile","c":"EXP","th":"Experience & Engagement","co":"#db2777","v":457,"st":6,"sh":6,"ini":"Exhibitor Experience - a polished, self-serve exhibitor presence","w":"Adds the hosting Exhibitor's name to Exhibitor Event detail cards so attendees can identify the organizer without returning to the list view.","wy":"Customer Request - closes a list-vs-detail information gap for attendees identifying exhibitor-hosted events.","o":"Exhibitor Event detail cards now display the hosting Exhibitor name, matching the list view across Web, iOS and Android.","ch":"6 shipped"},{"i":14,"n":"API V3 & Integrations 2026","l":"API v3 Integrations","c":"EXP","th":"Experience & Engagement","co":"#db2777","v":396,"st":5,"sh":4,"ini":"API V3","w":"The final tranche of work for the MYS native integration was delivered, closing out the remaining gaps so the MYS client's end-to-end integration needs are fully met.","wy":"Hive/client commitment to complete the contracted MYS integration scope.","o":"Completed the remaining MYS integration tasks (stage 2) covering the outstanding user needs.","ch":"4 shipped"},{"i":15,"n":"Sessions & Agenda UX (New UI)","l":"Sessions UX","c":"EXP","th":"Experience & Engagement","co":"#db2777","v":390,"st":5,"sh":3,"ini":"Sessions & Agenda Experience - help attendees discover, plan, and never miss a session","w":"Ensures a paid Sponsor's organization name is always shown across Session cards, pages, modals, recommendations and round-table/exhibitor-event surfaces, even when no logo is uploaded.","wy":"Customer Request - protects sponsor recognition that organizers have sold, regardless of logo availability.","o":"Sponsor organization name now always displays across all session-related surfaces, alongside the logo or a standardized placeholder when none exists.","ch":"3 shipped"},{"i":16,"n":"Participant Registration on New UI","l":"Registration UI","c":"EXP","th":"Experience & Engagement","co":"#db2777","v":304,"st":4,"sh":3,"ini":"Registration Re-platform - one unified, higher-converting signup flow","w":"Login was split into two clear flows, SAML SSO for buyers and standard EP login for API-created team members, so both user types can authenticate without the SSO path blocking those who need credentials.","wy":"Client commitment to support mixed authentication, presenting users a choice between SSO and standard login.","o":"A sign-in modal now offers two options: SAML redirect to the identity provider, or the standard EP login flow.","ch":"3 shipped"},{"i":17,"n":"Mobile App - 2026 Enhancements","l":"Mobile App","c":"EXP","th":"Experience & Engagement","co":"#db2777","v":294,"st":5,"sh":3,"ini":"Mobile App - a first-class on-site experience in the pocket","w":"Custom badge errors in the Aditus integration now route users to a clear, localized error page (with German) instead of silently reverting to the native badge, so attendees know what action to take.","wy":"Client commitment/UX fix for an event using the Aditus custom badge integration, including required German localization.","o":"Users are redirected to appropriate error pages with refined English copy and added German variants for no-connection and no-information cases.","ch":"3 shipped"},{"i":18,"n":"Admin Panel CSS Redesign - Phase 1 (5 Core Pages)","l":"Admin Redesign","c":"EXP","th":"Experience & Engagement","co":"#db2777","v":256,"st":4,"sh":0,"ini":"Admin Redesign","w":"Restyles the Event Setup admin page to the new Untitled UI design language (CSS-only, no markup or logic changes), modernizing one of the most-used organizer setup screens.","wy":"Product Vision - admin panel modernization under the Untitled UI redesign.","o":"The Event Setup page visually matches the Untitled UI design language with all existing functionality intact, using the shared Untitled UI Redesign.css.","ch":"Platform-wide"},{"i":19,"n":"Website Builder & Event Site 2026","l":"Website Builder","c":"EXP","th":"Experience & Engagement","co":"#db2777","v":195,"st":3,"sh":2,"ini":"Website & Event Site Builder - give organizers a flexible, on-brand event website","w":"Website Builder now lets organizers hide the call-to-action button on individual cards via a per-card toggle, removing the previous reliance on custom CSS.","wy":"Self-Service / Customer Request - a per-card toggle removes a custom-CSS workaround and gives organizers direct, code-free control.","o":"A per-card toggle was added to the Website Builder card component so organizers can show or hide the button on each card independently.","ch":"2 shipped"},{"i":20,"n":"Improve Existing Search & Elasticsearch","l":"Elasticsearch","c":"EXP","th":"Experience & Engagement","co":"#db2777","v":154,"st":3,"sh":2,"ini":"Search & Discovery - attendees find the right people and content instantly","w":"Brought organizer Campaign email recommendation blocks up to the visitor-side standard with clear boundaries and full-width card layouts, so event emails look consistent and professional.","wy":"UX consistency / Product Vision - align recommendation block styling across all types and with the visitor experience.","o":"Each recommendation block now has a consistent boundary and its cards use the full block width across Exhibitors, Products, News and Sponsors, on desktop and mobile, with no change to recommendation logic.","ch":"2 shipped"},{"i":21,"n":"Communication Channels - Email, Chat & Notifications","l":"Comms Channels","c":"EXP","th":"Experience & Engagement","co":"#db2777","v":115,"st":2,"sh":1,"ini":"Communication & Engagement - keep every audience informed, connected, and coming back","w":"Messenger now lets users filter conversations by status, cutting the time attendees and exhibitors spend hunting through a cluttered inbox to find active or pending threads.","wy":"Product Vision improvement to the core networking/messaging experience, raising day-of-event usability of a heavily used surface.","o":"Conversation status filters were added to Messenger so users can narrow the thread list by state.","ch":"1 shipped"},{"i":22,"n":"Improve Meetings & Scheduling","l":"Meetings & Scheduling","c":"DATA","th":"Data, Insight & Trust","co":"#16a34a","v":544,"st":7,"sh":6,"ini":"Meetings & Networking - turn matchmaking into meetings that actually happen","w":"A toggle now lets organizers fully disable notifications for a specific Meeting Program on Web and App, delivered as an urgent hotfix to meet a HYVE requirement to suppress unwanted meeting alerts.","wy":"Hive urgent client requirement delivered as a hotfix exception.","o":"Added a 'Disable notifications' ON/OFF toggle (default OFF) on Meeting Program create/edit settings that suppresses all related Web and App notifications when enabled.","ch":"6 shipped"},{"i":23,"n":"Automated Event Reporting Dashboards (Embeddable.com)","l":"Auto Reporting","c":"DATA","th":"Data, Insight & Trust","co":"#16a34a","v":486,"st":11,"sh":6,"ini":"New Analytics","w":"A Sponsorships Deep Dive dashboard was delivered (currently in testing), reporting sponsor performance by asset type for organisers.","wy":"Part of the New Analytics initiative to deliver automated reporting dashboards per the PRD (Product Vision / Revenue Opportunity).","o":"A Sponsorships Deep Dive page provides a per-sponsor/asset performance table (views, clicks, CTR) and sponsor KPI cards, with logic to filter to confirmed sponsors only (PRD R21); the story is in testing.","ch":"6 shipped"},{"i":24,"n":"Attendance & Event Analytics 2026","l":"Event Analytics","c":"DATA","th":"Data, Insight & Trust","co":"#16a34a","v":128,"st":2,"sh":2,"ini":"New Analytics","w":"Organizers of co-located events can now compare check-ins across those events and see crossover check-ins in the Total Check-In/Check-Out graph, unlocking shared-attendance insight for multi-event venues.","wy":"Customer Request / Operational Efficiency - co-located event organizers needed combined check-in analytics and badge-origin filtering.","o":"The Total Check-In / Check-Out graph now supports comparing check-ins across co-located events and surfaces crossover check-ins, filterable by badge origin.","ch":"2 shipped"},{"i":25,"n":"IMEX GDPR Requirements","l":"GDPR","c":"DATA","th":"Data, Insight & Trust","co":"#16a34a","v":112,"st":1,"sh":0,"ini":"Privacy, GDPR & Compliance - trust by default","w":"Lets privacy-opted-out attendees favourite exhibitors, products and people fully anonymously, satisfying strict GDPR (notably Germany/IMEX) expectations while still hinting interest to the other party via a combined, tooltip-explained count","wy":"Compliance Requirement - GDPR-driven privacy requirement tied to IMEX and German data-protection expectations.","o":"Opted-out users can favourite/unfavourite on web and app with the action kept out of notifications, the interaction dashboard, downloaded leads and the public API, never counted as a lead, preserved even if the user later opts in, plus tooltips clarifying that","ch":"Value 112"},{"i":26,"n":"Platform Performance & Operational Efficiency 2026","l":"Perf & Efficiency","c":"INTEG","th":"Integrations & Platform","co":"#2563eb","v":927,"st":10,"sh":8,"ini":"Scalability & Operational Efficiency - scale to more events with less effort and higher reliability","w":"The AI Search service was made highly available across two AWS zones, load-tested, and costed, de-risking it for production launch.","wy":"Reliability phase of the Search & Discovery initiative to ensure the service is resilient and its economics understood (Scalability Initiative / Platform Health).","o":"The Search API now runs across two AWS availability zones, load testing was completed with Locust, and a monthly cost estimate covering AWS, OpenAI, and Qdrant was produced.","ch":"Platform-wide"},{"i":27,"n":"API V2 - Quality Assurance","l":"API V2 QA","c":"INTEG","th":"Integrations & Platform","co":"#2563eb","v":816,"st":51,"sh":51,"ini":"API V2 - Quality Assurance","w":"Hardened the public Open API v2 /api/v2/account/exists endpoint through dedicated QA so external integrators get a reliable, well-tested interface.","wy":"Quality Assurance - part of the structured API V2 QA initiative to validate every Open API endpoint before broad use.","o":"Executed a full QA pass on /api/v2/account/exists, with any defects logged as individual linked bugs, raising confidence in the endpoint's correctness.","ch":"Platform-wide"},{"i":28,"n":"Improve Speed Networking Service","l":"Speed Networking","c":"INTEG","th":"Integrations & Platform","co":"#2563eb","v":710,"st":8,"sh":6,"ini":"Improving existing tools","w":"Hardened the Speed Networking algorithm to reject and error on invalid input instead of silently ignoring it, preventing meetings being scheduled into blocked slots - a problem seen after a Hyve event.","wy":"Platform Health / Hive requirement - correct data-validation conflicts surfaced during Hyve meeting generation.","o":"The algorithm now returns a 400 and logs an error for any input failing validation, applied broadly beyond just blocked timeslots.","ch":"Platform-wide"},{"i":29,"n":"Migration of endpoints (Public API v3)","l":"API v3 Endpoints","c":"INTEG","th":"Integrations & Platform","co":"#2563eb","v":432,"st":14,"sh":11,"ini":"API V3","w":"Introduced a net-new V3 endpoint to retrieve event sponsors with full profile, category and placement data, broadening the public API's coverage for partner integrations.","wy":"Future Proofing / integration capability - expose sponsor data via the modern V3 API.","o":"A new GET /api/v3/events/{eventId}/sponsors endpoint was delivered returning sponsor profile, category and placement configuration with pagination.","ch":"Platform-wide"},{"i":30,"n":"Add new endpoints (v3)","l":"New v3 Endpoints","c":"INTEG","th":"Integrations & Platform","co":"#2563eb","v":112,"st":1,"sh":1,"ini":"API V3","w":"Meetings export was migrated to the V3 public API with rich filtering and incremental sync, letting integration partners pull meeting data reliably and at scale.","wy":"Product Vision/platform modernisation of the public integration surface, part of the API V3 programme.","o":"Delivered GET /api/v3/meetings with pagination, time/created/modified filters, account filtering and timestamp-based incremental fetch returning ISO8601 data.","ch":"Platform-wide"},{"i":31,"n":"Migrate Integration-team tests from teststone \u2192 PHP (Codeception/Pest) + e2e-testing","l":"Test Migration","c":"INTEG","th":"Integrations & Platform","co":"#2563eb","v":32,"st":2,"sh":0,"ini":"API V2 - Quality Assurance","w":"The Integration team's trial test plans for the Event Statistics and Session Program contexts were migrated from the teststone repository into the e2e testing repository, consolidating test ownership and tooling.","wy":"Technical Debt / Maintenance - executing the Test Automation Strategy to migrate Integration-team tests off teststone into the standard e2e repository as the single source of truth.","o":"Trial test plans and supporting docs for Event Statistics and Session Program were moved into the e2e repository, with updates now made only there and tests re-classified and re-levelled.","ch":"Platform-wide"},{"i":32,"n":"SLOs are established per team","l":"Team SLOs","c":"INTEG","th":"Integrations & Platform","co":"#2563eb","v":20,"st":1,"sh":0,"ini":"ExpoPlatform SLOs establishment","w":"Establishes documented, measurable availability and latency SLOs for every endpoint the Exhibitor team owns, giving engineering leadership service-level visibility into platform reliability.","wy":"Platform Health - part of the company-wide SLO establishment initiative to make reliability explicit and measurable per team.","o":"A documented set of availability and latency SLOs (and any application-specific golden-path targets) for the Exhibitor team's owned endpoints, based on Grafana data and agreed by the whole team, published in the Engineering Confluence space.","ch":"Platform-wide"},{"i":33,"n":"Covering Existing Functionality with Tests","l":"Test Coverage","c":"INTEG","th":"Integrations & Platform","co":"#2563eb","v":16,"st":1,"sh":0,"ini":"API V2 - Quality Assurance","w":"The Import Participants feature is being brought under full automated-test coverage with consolidated business, technical, and test documentation following the standard quality process.","wy":"Part of the initiative to cover existing functionality with tests, paying down test debt on core features (Platform Health / Internal Efficiency).","o":"Not Clearly Specified (story is still In Progress; the five-step process of BA/tech docs, BE/FE/E2E test plans, test implementation into CI/CD, and QA sign-off is underway but not yet complete).","ch":"Platform-wide"},{"i":34,"n":"Lead Capture pro settings","l":"Lead Capture","c":"REV","th":"Revenue & Monetisation","co":"#d97706","v":775,"st":12,"sh":11,"ini":"Lead Intelligence & Capture - turn every scan into qualified pipeline","w":"Updates how exhibitor lead contribution is calculated so that meeting appointments feed into the lead scoring exhibitors see.","wy":"Customer Request - improves the accuracy of Lead Intelligence value reporting that exhibitors rely on.","o":"Revised lead-contribution calculation that incorporates meeting appointments into exhibitor lead metrics.","ch":"11 shipped"},{"i":35,"n":"Admin Panel Restructure & Navigation","l":"Admin Navigation","c":"REV","th":"Revenue & Monetisation","co":"#d97706","v":496,"st":7,"sh":7,"ini":"Client Manager Redesign + Onboarding + Admin Panel Redesign","w":"Sponsors and sponsored products can now be displayed in randomized order on the web platform, giving every paying sponsor fairer visibility rotation.","wy":"Revenue Opportunity / Customer Request - fair sponsor rotation strengthens the sponsorship product that organizers monetise.","o":"A random sorting mode was added for Sponsors and Sponsored Products so their display order is shuffled rather than fixed by priority.","ch":"7 shipped"}],"clusters":[{"k":"AI","n":"AI & Automation","sh":"AI & Automation","co":"#4f46e5","f":true,"d":"Machine intelligence that does the work for people: search, recommendations, agents and meeting notes.","v":2330,"ne":8,"ns":40,"top":[{"n":"Search Anatomy","v":692},{"n":"Qdrant Pilot (IMEX)","v":524},{"n":"Recreate category-based Recommendation Service","v":373}]},{"k":"COST","n":"Cost & Labour Reduction","sh":"Cost & Labour","co":"#0891b2","f":true,"d":"Automating manual effort and self-service so teams run more events with less hands-on work.","v":1711,"ne":5,"ns":22,"top":[{"n":"Hyve Q1.26 delievery","v":899},{"n":"Native Integrations - Migrations","v":428},{"n":"Meeting Formats: Admin Re-arrangement","v":272}]},{"k":"EXP","n":"Experience & Engagement","sh":"Experience","co":"#db2777","f":false,"d":"The attendee, exhibitor and organiser experience: mobile, websites, networking and sessions.","v":2767,"ne":12,"ns":42,"top":[{"n":"Exhibitor profile","v":457},{"n":"API V3 & Integrations 2026","v":396},{"n":"Sessions & Agenda UX (New UI)","v":390}]},{"k":"DATA","n":"Data, Insight & Trust","sh":"Data & Trust","co":"#16a34a","f":false,"d":"Analytics, reporting and privacy/GDPR work that turns event activity into trusted insight.","v":1270,"ne":4,"ns":21,"top":[{"n":"Improve Meetings & Scheduling","v":544},{"n":"Automated Event Reporting Dashboards (Embeddable.com)","v":486},{"n":"Attendance & Event Analytics 2026","v":128}]},{"k":"INTEG","n":"Integrations & Platform","sh":"Integrations","co":"#2563eb","f":false,"d":"APIs, integrations, scalability and reliability that let the platform scale to more events with less risk.","v":3065,"ne":8,"ns":88,"top":[{"n":"Platform Performance & Operational Efficiency 2026","v":927},{"n":"API V2 - Quality Assurance","v":816},{"n":"Improve Speed Networking Service","v":710}]},{"k":"REV","n":"Revenue & Monetisation","sh":"Revenue","co":"#d97706","f":false,"d":"Features that grow sponsor, lead and ticketing income for organisers and the platform.","v":1271,"ne":2,"ns":19,"top":[{"n":"Lead Capture pro settings","v":775},{"n":"Admin Panel Restructure & Navigation","v":496}]}],"meta":{"stories":242,"value":13044,"themes":6,"ref":[100,450,950]}};
+var EP = {}, CL = {};
+D.epics.forEach(function(e){ EP[e.i] = e; });
+D.clusters.forEach(function(c){ CL[c.k] = c; });
+var byId = function(id){ return document.getElementById(id); };
+var svg = byId('impact-svg'), tip = byId('tip'), panel = byId('panel'), pbody = byId('panel-body'), status = byId('theme-status');
+var isolated = null;
+if(!svg || !tip || !panel || !pbody){ return; }
+Array.prototype.slice.call(svg.querySelectorAll('title')).forEach(function(t){ t.parentNode.removeChild(t); });
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function all(sel){ return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+function tipHTML(e){
+  var h = '<div class="tt-th"><span class="tt-dot" style="background:'+e.co+'"></span>'+esc(e.th)+'</div>';
+  h += '<div class="tt-name">'+esc(e.n)+'</div>';
+  h += '<div class="tt-row"><b>'+e.v+'</b> value <span class="tt-sep">&middot;</span> '+e.sh+' / '+e.st+' stories shipped</div>';
+  h += '<div class="tt-ini">'+esc(e.ini)+'</div>';
+  if(e.w){ h += '<div class="tt-what">'+esc(e.w)+'</div>'; }
+  return h;
+}
+function showTip(e){ tip.innerHTML = tipHTML(e); tip.classList.add('show'); tip.setAttribute('aria-hidden','false'); }
+function moveTip(ev){
+  var pad = 14, tw = tip.offsetWidth || 260, th = tip.offsetHeight || 120;
+  var x = ev.clientX + pad, y = ev.clientY + pad;
+  if(x + tw > window.innerWidth - 8){ x = ev.clientX - tw - pad; }
+  if(y + th > window.innerHeight - 8){ y = ev.clientY - th - pad; }
+  if(x < 8){ x = 8; } if(y < 8){ y = 8; }
+  tip.style.left = x + 'px'; tip.style.top = y + 'px';
+}
+function hideTip(){ tip.classList.remove('show'); tip.setAttribute('aria-hidden','true'); }
+function statCell(label, val){ return '<div class="p-stat"><div class="p-statv">'+val+'</div><div class="p-statl">'+esc(label)+'</div></div>'; }
+function field(lab, val){ return '<div class="p-field"><div class="p-lab">'+esc(lab)+'</div><div class="p-val">'+esc(val)+'</div></div>'; }
+function openEpic(i){
+  var e = EP[i]; if(!e){ return; }
+  var h = '<div class="p-th"><span class="tt-dot" style="background:'+e.co+'"></span>'+esc(e.th)+'</div>';
+  h += '<h2 class="p-name">'+esc(e.n)+'</h2>';
+  if(e.ch){ h += '<div class="p-chip" style="background:'+e.co+'">'+esc(e.ch)+'</div>'; }
+  h += '<div class="p-stats">'+statCell('Value score', e.v)+statCell('Stories', e.sh+' / '+e.st)+'</div>';
+  h += field('Initiative', e.ini);
+  if(e.w){ h += field('What', e.w); }
+  if(e.wy){ h += field('Why', e.wy); }
+  if(e.o){ h += field('Outcome', e.o); }
+  pbody.innerHTML = h; openPanel();
+}
+function openCluster(k){
+  var c = CL[k]; if(!c){ return; }
+  var h = '<div class="p-th"><span class="tt-dot" style="background:'+c.co+'"></span>'+esc(c.n)+(c.f?' <span class="p-star">featured</span>':'')+'</div>';
+  h += '<h2 class="p-name">'+esc(c.n)+'</h2>';
+  if(c.d){ h += '<div class="p-desc">'+esc(c.d)+'</div>'; }
+  h += '<div class="p-stats">'+statCell('Value', (c.v||0).toLocaleString())+statCell('Epics', c.ne)+statCell('Stories', c.ns)+'</div>';
+  if(c.top && c.top.length){
+    h += '<div class="p-lab">Top epics by value</div><ol class="p-top">';
+    c.top.forEach(function(t){ h += '<li><span>'+esc(t.n)+'</span><b>'+t.v+'</b></li>'; });
+    h += '</ol>';
+  }
+  h += '<button class="p-reset" id="p-reset">Show all themes</button>';
+  pbody.innerHTML = h; openPanel();
+  var rb = byId('p-reset'); if(rb){ rb.addEventListener('click', function(){ resetIso(); closePanel(); }); }
+}
+function openPanel(){ panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); hideTip(); }
+function closePanel(){ panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); }
+function setOp(sel, keep, dim){
+  all(sel).forEach(function(g){ g.style.opacity = (keep === null || g.getAttribute('data-cl') === keep) ? '1' : dim; });
+}
+function isolate(k){
+  isolated = k;
+  setOp('.cluster', k, '0.12'); setOp('.chip', k, '0.12'); setOp('.leg', k, '0.4');
+  if(status){ status.textContent = 'Showing: ' + (CL[k]?CL[k].sh:k) + '   (reset)'; status.setAttribute('fill', '#3a3f4b'); }
+}
+function resetIso(){
+  isolated = null;
+  setOp('.cluster', null, '1'); setOp('.chip', null, '1'); setOp('.leg', null, '1');
+  if(status){ status.textContent = 'All themes'; status.setAttribute('fill', '#9aa1ac'); }
+}
+function toggleIso(k){ if(isolated === k){ resetIso(); closePanel(); } else { isolate(k); openCluster(k); } }
+function peek(k){ if(isolated){ return; } setOp('.cluster', k, '0.32'); }
+function unpeek(){ if(isolated){ return; } setOp('.cluster', null, '1'); }
+all('.bubble').forEach(function(el){
+  var i = parseInt(el.getAttribute('data-epic'), 10);
+  el.addEventListener('mouseenter', function(){ var e = EP[i]; if(e){ showTip(e); } });
+  el.addEventListener('mouseover', function(){ var e = EP[i]; if(e){ showTip(e); } });
+  el.addEventListener('mousemove', moveTip);
+  el.addEventListener('mouseleave', hideTip);
+  el.addEventListener('mouseout', hideTip);
+  el.addEventListener('click', function(ev){ ev.stopPropagation(); openEpic(i); });
+});
+all('.leg').forEach(function(g){
+  var k = g.getAttribute('data-cl');
+  g.addEventListener('mouseenter', function(){ peek(k); });
+  g.addEventListener('mouseleave', unpeek);
+  g.addEventListener('click', function(ev){ ev.stopPropagation(); toggleIso(k); });
+});
+all('.cl-rim').forEach(function(g){
+  var k = g.getAttribute('data-cl');
+  g.addEventListener('mouseenter', function(){ peek(k); });
+  g.addEventListener('mouseleave', unpeek);
+  g.addEventListener('click', function(ev){ ev.stopPropagation(); toggleIso(k); });
+});
+var cbtn = byId('panel-close'); if(cbtn){ cbtn.addEventListener('click', closePanel); }
+if(status){ status.addEventListener('click', function(){ resetIso(); closePanel(); }); }
+var bg = byId('bg'); if(bg){ bg.addEventListener('click', function(){ resetIso(); closePanel(); }); }
+document.addEventListener('keydown', function(ev){ if(ev.key === 'Escape' || ev.keyCode === 27){ closePanel(); resetIso(); hideTip(); } });
+})();</script>
